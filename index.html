@@ -1139,16 +1139,6 @@
     localStorage.removeItem(FIREBASE_CONFIG_KEY);
   }
 
-  // Default config (hardcoded — Firebase web configs are public; security is via Firestore rules)
-  const DEFAULT_FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDpVCUuXRI_nM_ZpvqX-duP6nizFazGjx4",
-    authDomain: "lb-club-tracker.firebaseapp.com",
-    projectId: "lb-club-tracker",
-    storageBucket: "lb-club-tracker.firebasestorage.app",
-    messagingSenderId: "702922778039",
-    appId: "1:702922778039:web:86d265866c9b10763e7432"
-  };
-
   let firebaseApp = null, db = null, auth = null, authProvider = null;
   let firebaseReady = false;
 
@@ -1167,8 +1157,9 @@
     }
   }
 
-  // Use localStorage override if present, otherwise use hardcoded config
-  initFirebase(loadFirebaseConfig() || DEFAULT_FIREBASE_CONFIG);
+  // Only initialize if user has configured their own Firebase project
+  const _savedConfig = loadFirebaseConfig();
+  if (_savedConfig) initFirebase(_savedConfig);
 
   // ===== SYNC STATE =====
   let currentUser = null;
