@@ -465,13 +465,25 @@
     justify-content: space-between;
     margin-bottom: 16px;
   }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+  }
+  .header-logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
   .header h1 {
     font-size: var(--text-2xl);
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--text-strong);
-    flex: 1;
     text-align: center;
+    line-height: 1;
   }
   .header-spacer { width: 36px; }
   .header-right { display: flex; align-items: center; gap: 2px; }
@@ -978,10 +990,6 @@
 
   /* ===== Responsive: Mobile (≤599px) ===== */
   @media (max-width: 599px) {
-    .dashboard {
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-2);
-    }
     .strength-ratios { flex-direction: column; }
     .records-grid { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .filter-bar { flex-wrap: wrap; }
@@ -989,10 +997,6 @@
 
   /* ===== Responsive: Tablet+ (≥600px) ===== */
   @media (min-width: 600px) {
-    .dashboard {
-      grid-template-columns: repeat(4, 1fr);
-      gap: var(--space-3);
-    }
     #app { padding: var(--space-5); }
     .card { padding: var(--space-4) var(--space-3); }
     .session-header { padding: var(--space-3) var(--space-4); }
@@ -1004,7 +1008,23 @@
 <div id="app">
   <div class="header">
     <button class="theme-btn" id="theme-btn" title="Toggle theme">&#9790;</button>
-    <h1>1000lb Club</h1>
+    <div class="header-brand">
+      <svg class="header-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer ring -->
+        <circle cx="50" cy="50" r="46" fill="none" stroke="var(--text-strong)" stroke-width="4"/>
+        <!-- Barbell -->
+        <rect x="20" y="46" width="60" height="8" rx="2" fill="var(--text-strong)"/>
+        <!-- Left plates -->
+        <rect x="14" y="32" width="10" height="36" rx="3" fill="var(--squat)"/>
+        <rect x="8" y="36" width="8" height="28" rx="2.5" fill="var(--bench)"/>
+        <!-- Right plates -->
+        <rect x="76" y="32" width="10" height="36" rx="3" fill="var(--deadlift)"/>
+        <rect x="84" y="36" width="8" height="28" rx="2.5" fill="var(--total)"/>
+        <!-- Center text -->
+        <text x="50" y="82" text-anchor="middle" font-size="13" font-weight="800" font-family="-apple-system,BlinkMacSystemFont,sans-serif" fill="var(--text-strong)" letter-spacing="0.5">1000</text>
+      </svg>
+      <h1>1000lb Club</h1>
+    </div>
     <div style="position:relative">
       <button class="sync-btn" id="sync-btn" title="Cloud sync">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
