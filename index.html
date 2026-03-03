@@ -941,6 +941,99 @@
   @keyframes slideInLeft { from { transform: translateY(4px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   @keyframes slideInRight { from { transform: translateY(4px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+  /* ===== 1000LB CLUB CELEBRATION ===== */
+  @keyframes celebrationFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes celebrationScaleIn { from { transform: scale(0.6) translateY(30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes celebrationBounce { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+  @keyframes celebrationFadeUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes celebrationFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+  .celebration-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: radial-gradient(ellipse at center, rgba(255,215,0,0.08) 0%, rgba(0,0,0,0.85) 70%);
+    display: flex; align-items: center; justify-content: center;
+    animation: celebrationFadeIn 0.6s ease-out;
+  }
+  .celebration-overlay.fade-out { animation: celebrationFadeOut 0.5s ease-out forwards; }
+
+  .celebration-content {
+    position: relative; text-align: center; padding: 40px 36px 32px;
+    background: var(--surface); border: 2px solid var(--gold);
+    border-radius: 20px; max-width: 420px; width: 90%;
+    box-shadow: 0 0 60px rgba(255,215,0,0.25), 0 0 120px rgba(255,215,0,0.1);
+    animation: celebrationScaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  }
+
+  .celebration-close {
+    position: absolute; top: 12px; right: 16px;
+    background: none; border: none; color: var(--text-dim);
+    font-size: 1.5rem; cursor: pointer; line-height: 1;
+    transition: color 0.15s;
+  }
+  .celebration-close:hover { color: var(--text); }
+
+  .celebration-crown {
+    font-size: 3.5rem; margin-bottom: 4px;
+    animation: celebrationBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.6s both;
+  }
+
+  .celebration-subtitle {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3em;
+    color: var(--gold); margin-bottom: 4px;
+    animation: celebrationFadeUp 0.5s ease-out 0.8s both;
+  }
+
+  .celebration-title {
+    font-size: 2.5rem; font-weight: 900; line-height: 1.1;
+    color: var(--text); margin-bottom: 12px;
+    text-shadow: 0 0 30px rgba(255,215,0,0.3);
+    animation: celebrationFadeUp 0.5s ease-out 1.0s both;
+  }
+
+  .celebration-total {
+    font-size: 3rem; font-weight: 900; color: var(--gold);
+    margin-bottom: 16px;
+    animation: celebrationFadeUp 0.5s ease-out 1.2s both;
+  }
+
+  .celebration-breakdown {
+    display: flex; justify-content: center; gap: 24px; margin-bottom: 16px;
+    animation: celebrationFadeUp 0.5s ease-out 1.4s both;
+  }
+  .celebration-breakdown .cb-lift { text-align: center; }
+  .celebration-breakdown .cb-label {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; display: block; margin-bottom: 2px;
+  }
+  .celebration-breakdown .cb-value {
+    font-size: 1.3rem; font-weight: 800; color: var(--text);
+  }
+
+  .celebration-date {
+    font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;
+    animation: celebrationFadeUp 0.5s ease-out 1.6s both;
+  }
+
+  .celebration-actions {
+    animation: celebrationFadeUp 0.5s ease-out 1.8s both;
+  }
+
+  .celebration-share-btn {
+    padding: 12px 32px; border: 2px solid var(--gold); border-radius: var(--radius-lg);
+    background: var(--gold-bg); color: var(--gold);
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .celebration-share-btn:hover { background: rgba(255,215,0,0.2); transform: scale(1.04); }
+
+  .confetti {
+    position: absolute; top: -10px; border-radius: 2px;
+    pointer-events: none; animation: confettiFall linear forwards;
+  }
+
   /* Save button inside modals */
   .modal-save-btn {
     width: 100%; padding: 14px; border: none; border-radius: var(--radius-lg);
@@ -1322,6 +1415,7 @@
   // Program templates
   const PROGRAMS_KEY = 'sbd-tracker-programs';
   const RECAP_WEEK_KEY = 'sbd-tracker-recap-week';
+  const CELEBRATION_KEY = 'sbd-tracker-celebrated-1000';
   const PROGRAM_TEMPLATES = {
     '5/3/1': {
       name: '5/3/1 Boring But Big',
@@ -2536,6 +2630,161 @@
     setTimeout(() => el.classList.remove('show'), duration || 4000);
   }
 
+  // ===== 1000LB CLUB CELEBRATION =====
+  function checkAndCelebrate1000() {
+    const total = getTotal();
+    if (!total || total < 1000) return;
+    if (localStorage.getItem(CELEBRATION_KEY)) return;
+    localStorage.setItem(CELEBRATION_KEY, Date.now().toString());
+    setTimeout(() => showCelebration(total), 600);
+  }
+
+  function showCelebration(total) {
+    const overlay = document.createElement('div');
+    overlay.className = 'celebration-overlay';
+
+    // Confetti particles
+    const confettiColors = [COLORS.squat, COLORS.bench, COLORS.deadlift, '#ffd700', '#fff'];
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti';
+      const size = 6 + Math.random() * 8;
+      p.style.left = Math.random() * 100 + '%';
+      p.style.width = size + 'px';
+      p.style.height = (Math.random() > 0.5 ? size : size * 2.5) + 'px';
+      p.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      p.style.animationDuration = (2 + Math.random() * 3) + 's';
+      p.style.animationDelay = (Math.random() * 2.5) + 's';
+      overlay.appendChild(p);
+    }
+
+    const sq = bestE1RM('squat'), bp = bestE1RM('bench'), dl = bestE1RM('deadlift');
+
+    const content = document.createElement('div');
+    content.className = 'celebration-content';
+    content.innerHTML = `
+      <button class="celebration-close" aria-label="Close">&times;</button>
+      <div class="celebration-crown">👑</div>
+      <div class="celebration-subtitle">WELCOME TO THE</div>
+      <div class="celebration-title">1000 LB CLUB</div>
+      <div class="celebration-total">${formatWeight(total)} ${unit}</div>
+      <div class="celebration-breakdown">
+        <div class="cb-lift">
+          <span class="cb-label" style="color:${COLORS.squat}">SQ</span>
+          <span class="cb-value">${sq ? formatWeight(sq) : '—'}</span>
+        </div>
+        <div class="cb-lift">
+          <span class="cb-label" style="color:${COLORS.bench}">BP</span>
+          <span class="cb-value">${bp ? formatWeight(bp) : '—'}</span>
+        </div>
+        <div class="cb-lift">
+          <span class="cb-label" style="color:${COLORS.deadlift}">DL</span>
+          <span class="cb-value">${dl ? formatWeight(dl) : '—'}</span>
+        </div>
+      </div>
+      <div class="celebration-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+      <div class="celebration-actions">
+        <button class="celebration-share-btn">📤 Share Achievement</button>
+      </div>
+    `;
+
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+
+    // Dismiss handlers
+    function dismiss() {
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.remove(), 500);
+    }
+
+    content.querySelector('.celebration-close').addEventListener('click', dismiss);
+    overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+    const autoDismiss = setTimeout(dismiss, 15000);
+
+    content.querySelector('.celebration-share-btn').addEventListener('click', () => {
+      clearTimeout(autoDismiss);
+      share1000Card(total, sq, bp, dl);
+    });
+  }
+
+  function share1000Card(total, sq, bp, dl) {
+    const c = document.createElement('canvas');
+    c.width = 600; c.height = 400;
+    const x = c.getContext('2d');
+
+    // Background
+    x.fillStyle = '#1a1a1a'; x.beginPath(); x.roundRect(0, 0, 600, 400, 16); x.fill();
+
+    // SBD gradient top bar
+    const grad = x.createLinearGradient(0, 0, 600, 0);
+    grad.addColorStop(0, COLORS.squat); grad.addColorStop(0.5, COLORS.bench); grad.addColorStop(1, COLORS.deadlift);
+    x.fillStyle = grad; x.fillRect(0, 0, 600, 6);
+
+    // Crown
+    x.font = '40px serif'; x.textAlign = 'center';
+    x.fillText('👑', 300, 55);
+
+    // "1000 LB CLUB" title with gold glow
+    x.save();
+    x.shadowColor = '#ffd700'; x.shadowBlur = 20;
+    x.font = 'bold 42px -apple-system, sans-serif'; x.fillStyle = '#ffd700';
+    x.fillText('1000 LB CLUB', 300, 110);
+    x.restore();
+
+    // Total
+    x.font = 'bold 64px -apple-system, sans-serif'; x.fillStyle = '#fff';
+    x.fillText(formatWeight(total) + ' ' + unit, 300, 190);
+
+    // SBD breakdown
+    const lifts = [
+      { label: 'SQ', val: sq, color: COLORS.squat },
+      { label: 'BP', val: bp, color: COLORS.bench },
+      { label: 'DL', val: dl, color: COLORS.deadlift }
+    ];
+    const startX = 150;
+    lifts.forEach((l, i) => {
+      const cx = startX + i * 150;
+      x.font = 'bold 14px -apple-system, sans-serif'; x.fillStyle = l.color;
+      x.fillText(l.label, cx, 230);
+      x.font = 'bold 28px -apple-system, sans-serif'; x.fillStyle = '#fff';
+      x.fillText(l.val ? formatWeight(l.val) : '—', cx, 262);
+    });
+
+    // Wilks score if available
+    let infoY = 300;
+    if (profile.bodyweight && profile.gender) {
+      const tKg = lbsToKg(total), bKg = lbsToKg(profile.bodyweight);
+      const w = calcWilks(tKg, bKg, profile.gender);
+      if (w) {
+        x.font = '18px -apple-system, sans-serif'; x.fillStyle = '#aaa';
+        x.fillText('Wilks: ' + Math.round(w), 300, infoY);
+        infoY += 28;
+      }
+    }
+
+    // Date
+    x.font = '14px -apple-system, sans-serif'; x.fillStyle = '#555';
+    x.fillText(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), 300, infoY);
+
+    // Branding
+    x.font = 'bold 12px -apple-system, sans-serif'; x.fillStyle = '#444';
+    x.fillText('1000LB CLUB TRACKER', 300, 380);
+
+    // Share (same pattern as sharePRCard)
+    c.toBlob(blob => {
+      const file = new File([blob], '1000lb-club-achievement.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: '1000lb Club Achievement', text: 'I joined the 1000lb Club! Total: ' + formatWeight(total) + ' ' + unit });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = file.name; a.click();
+        URL.revokeObjectURL(url);
+        showToast('Achievement card downloaded');
+      }
+    }, 'image/png');
+  }
+
   // ===== DASHBOARD =====
   function updateDashboard() {
     ['squat', 'bench', 'deadlift'].forEach(lift => {
@@ -2595,6 +2844,7 @@
     updateFatigueBar();
     updateStreakBar();
     renderRecapCard();
+    checkAndCelebrate1000();
   }
 
   // F1: Strength Ratios
@@ -3133,6 +3383,7 @@
       localStorage.removeItem(CYCLES_KEY);
       localStorage.removeItem(PROGRAMS_KEY);
       localStorage.removeItem(RECAP_WEEK_KEY);
+      localStorage.removeItem(CELEBRATION_KEY);
       entries = []; prs = []; cycles = [];
       profile = { gender: null, bodyweight: null, bodyweightHistory: [] };
       goals = { squat: null, bench: null, deadlift: null, total: null };
