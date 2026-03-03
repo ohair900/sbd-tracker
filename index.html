@@ -2,13 +2,14 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>1000lb Club Tracker</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { touch-action: manipulation; }
 
   :root {
     --bg: #121212;
@@ -180,6 +181,177 @@
   .streak-info { font-size: var(--text-sm); color: var(--text-dim); flex: 1; }
   .streak-info strong { color: var(--text); }
   .streak-detail { font-size: var(--text-xs); color: var(--text-dim); }
+
+  /* Rate of progression trend */
+  .card-trend {
+    font-size: 0.6rem; margin-top: 2px; font-weight: 600;
+  }
+  .card-trend.up { color: var(--green); }
+  .card-trend.down { color: var(--red); }
+  .card-trend.flat { color: var(--text-dim); }
+
+  /* Plateau indicator */
+  .plateau-icon {
+    display: inline-block; cursor: help; position: relative;
+    font-size: 0.75rem; margin-left: 4px; vertical-align: middle;
+  }
+  .plateau-tooltip {
+    display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); color: var(--text); font-size: var(--text-xs);
+    padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-weight: 400;
+  }
+  .plateau-icon:hover .plateau-tooltip { display: block; }
+
+  /* PR streak bar */
+  .pr-streak-bar {
+    display: flex; gap: 10px; margin-bottom: var(--space-2); align-items: center;
+    background: var(--surface); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+  .pr-streak-bar .pr-streak-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .pr-streak-bar .pr-streak-info { color: var(--text-dim); flex: 1; }
+  .pr-streak-bar .pr-streak-info strong { color: var(--text); }
+  .pr-streak-bar .hot-streak { color: var(--gold); font-weight: 700; font-size: var(--text-xs); }
+
+  /* History search */
+  .history-search {
+    width: 100%; padding: 8px 12px; border: 2px solid var(--border);
+    border-radius: var(--radius-md); background: var(--surface);
+    color: var(--text); font-size: var(--text-sm); outline: none;
+    margin-bottom: var(--space-2); transition: border-color var(--transition-base);
+  }
+  .history-search:focus { border-color: var(--text-dim); }
+  .history-search::placeholder { color: var(--text-dim); }
+
+  /* Chart date range pills */
+  .chart-date-range {
+    display: flex; gap: 4px; margin-bottom: var(--space-2); flex-wrap: wrap;
+  }
+  .chart-date-range .range-pill {
+    padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--radius-pill);
+    background: transparent; color: var(--text-dim); font-size: var(--text-xs);
+    cursor: pointer; transition: all var(--transition-base);
+  }
+  .chart-date-range .range-pill.active {
+    background: var(--text); color: var(--bg); border-color: var(--text);
+  }
+
+  /* Badge grid */
+  .badge-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px;
+    margin-bottom: 12px;
+  }
+  .badge-card {
+    background: var(--surface2); border-radius: var(--radius-md); padding: 10px 6px;
+    text-align: center; transition: transform var(--transition-base);
+  }
+  .badge-card:hover { transform: translateY(-1px); }
+  .badge-card.locked { opacity: 0.3; filter: grayscale(1); }
+  .badge-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+  .badge-name { font-size: var(--text-xs); font-weight: 600; color: var(--text); }
+  .badge-date { font-size: 0.55rem; color: var(--text-dim); margin-top: 2px; }
+  .badge-category-label {
+    font-size: var(--text-xs); color: var(--text-dim); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 8px 0 6px;
+  }
+
+  /* Period comparison */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px 12px;
+    font-size: var(--text-sm); align-items: center;
+  }
+  .compare-label { color: var(--text-dim); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.04em; grid-column: 1 / -1; margin-top: 8px; font-weight: 600; }
+  .compare-val { font-weight: 700; }
+  .compare-indicator { font-size: var(--text-xs); font-weight: 700; text-align: center; }
+  .compare-indicator.up { color: var(--green); }
+  .compare-indicator.down { color: var(--red); }
+  .compare-indicator.same { color: var(--text-dim); }
+  .compare-select {
+    padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); font-size: var(--text-xs); outline: none;
+  }
+
+  /* Training calendar */
+  .calendar-nav {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  .calendar-nav-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text);
+    border-radius: var(--radius-sm); padding: 4px 10px; cursor: pointer; font-size: var(--text-sm);
+  }
+  .calendar-month-label { font-weight: 700; font-size: var(--text-base); color: var(--text); }
+  .calendar-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+    font-size: var(--text-xs); text-align: center;
+  }
+  .calendar-day-header { color: var(--text-dim); font-weight: 600; padding: 4px 0; }
+  .calendar-cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; border-radius: var(--radius-sm); cursor: default;
+    position: relative; padding: 2px; font-size: 0.6rem; color: var(--text-dim);
+  }
+  .calendar-cell.has-data { background: var(--surface2); cursor: pointer; }
+  .calendar-cell.has-data:hover { outline: 1px solid var(--text-dim); }
+  .calendar-cell.today { outline: 2px solid var(--gold); }
+  .calendar-dots { display: flex; gap: 2px; margin-top: 1px; }
+  .calendar-dot { width: 4px; height: 4px; border-radius: 50%; }
+  .calendar-pr-star { color: var(--gold); font-size: 0.5rem; position: absolute; top: 1px; right: 2px; }
+
+  /* Entry tags */
+  .tag-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .tag-pill {
+    padding: 2px 8px; border-radius: var(--radius-pill); font-size: 0.6rem;
+    background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border);
+    cursor: pointer; transition: all var(--transition-base); user-select: none;
+  }
+  .tag-pill.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .tag-chip {
+    display: inline-block; padding: 1px 6px; border-radius: var(--radius-pill);
+    font-size: 0.55rem; background: var(--surface2); color: var(--text-dim); margin-left: 3px;
+  }
+
+  /* Challenge mode */
+  .challenge-card {
+    background: var(--surface2); border-radius: var(--radius-md); padding: 10px;
+    margin-bottom: 8px;
+  }
+  .challenge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .challenge-title { font-size: var(--text-sm); font-weight: 600; color: var(--text); }
+  .challenge-deadline { font-size: var(--text-xs); color: var(--text-dim); }
+  .challenge-progress-track {
+    height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden;
+  }
+  .challenge-progress-fill {
+    height: 100%; border-radius: 3px; transition: width var(--transition-slow);
+  }
+  .challenge-pct { font-size: var(--text-xs); color: var(--text-dim); margin-top: 3px; text-align: right; }
+  .challenge-complete { color: var(--green); font-weight: 700; }
+
+  /* Accent color picker */
+  .accent-picker { display: flex; gap: 8px; margin: 8px 0; }
+  .accent-swatch {
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: border-color var(--transition-base), transform var(--transition-base);
+  }
+  .accent-swatch.active { border-color: var(--text); transform: scale(1.15); }
+
+  /* Year in review modal */
+  .yir-stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+  }
+  .yir-stat {
+    background: var(--surface2); border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .yir-stat-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  .yir-stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+  /* Dashboard widget toggle */
+  .widget-toggle {
+    display: flex; align-items: center; gap: 8px; padding: 6px 0;
+    font-size: var(--text-sm); color: var(--text);
+  }
+  .widget-toggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); }
 
   /* Weekly recap card */
   .recap-card {
@@ -1165,6 +1337,10 @@
     <div class="streak-info" id="streak-info"></div>
   </div>
   <div class="recap-card" id="recap-card" style="display:none" onclick=""></div>
+  <div class="pr-streak-bar" id="pr-streak-bar" style="display:none">
+    <span class="pr-streak-icon"></span>
+    <div class="pr-streak-info"></div>
+  </div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="log">Log</button>
@@ -1209,6 +1385,9 @@
     <div class="notes-section">
       <a class="notes-toggle" id="notes-toggle">+ Add note</a>
       <input type="text" class="notes-input" id="input-notes" placeholder="How did it feel?" style="display:none">
+    </div>
+    <div class="tag-pills" id="log-tags">
+      <span style="font-size:0.6rem;color:var(--text-dim);margin-right:2px">Tags:</span>
     </div>
     <div class="e1rm-preview" id="e1rm-preview">Enter weight and reps</div>
     <button class="log-btn" id="log-btn" disabled>Log Set</button>
@@ -1257,6 +1436,7 @@
       <div class="input-group"><label>From</label><input type="date" id="filter-from"></div>
       <div class="input-group"><label>To</label><input type="date" id="filter-to"></div>
     </div>
+    <input type="text" class="history-search" id="history-search" placeholder="Search: weight, notes, lift, rpe8, 200-300...">
     <div id="history-list"></div>
   </div>
 
@@ -1268,6 +1448,14 @@
       <button class="chart-type-btn" data-type="bodyweight">BW</button>
       <button class="chart-type-btn" data-type="wilks">Wilks</button>
       <button class="chart-type-btn" data-type="heatmap">Heatmap</button>
+      <button class="chart-type-btn" data-type="calendar">Cal</button>
+    </div>
+    <div class="chart-date-range" id="chart-date-range">
+      <button class="range-pill" data-range="30">30d</button>
+      <button class="range-pill" data-range="90">90d</button>
+      <button class="range-pill" data-range="180">6mo</button>
+      <button class="range-pill" data-range="365">1y</button>
+      <button class="range-pill active" data-range="all">All</button>
     </div>
     <div class="chart-filters" id="chart-filters">
       <button class="chart-filter-btn active" data-filter="all">All</button>
@@ -1416,6 +1604,53 @@
   const PROGRAMS_KEY = 'sbd-tracker-programs';
   const RECAP_WEEK_KEY = 'sbd-tracker-recap-week';
   const CELEBRATION_KEY = 'sbd-tracker-celebrated-1000';
+  const AUTO_THEME_KEY = 'sbd-tracker-auto-theme';
+  const BADGES_KEY = 'sbd-tracker-badges';
+  const DASH_WIDGETS_KEY = 'sbd-tracker-dash-widgets';
+  const ACCENT_KEY = 'sbd-tracker-accent';
+  const CHALLENGES_KEY = 'sbd-tracker-challenges';
+  const TAGS_KEY = 'sbd-tracker-tags';
+  const TOTAL_CELEBRATED_KEY = 'sbd-tracker-celebrated-totals';
+
+  const TOTAL_MILESTONES = [500, 750, 1000, 1250, 1500, 2000];
+  const TOTAL_MILESTONE_THEMES = {
+    500:  { emoji: '\uD83D\uDCAA', title: '500 LB TOTAL', color: '#43a047', confettiColors: ['#43a047','#66bb6a','#a5d6a7','#fff'] },
+    750:  { emoji: '\uD83C\uDFCB\uFE0F', title: '750 LB TOTAL', color: '#1e88e5', confettiColors: ['#1e88e5','#42a5f5','#90caf9','#fff'] },
+    1000: { emoji: '\uD83D\uDC51', title: '1000 LB CLUB', color: '#ffd700', confettiColors: ['#e53935','#1e88e5','#43a047','#ffd700','#fff'] },
+    1250: { emoji: '\uD83D\uDD25', title: '1250 LB TOTAL', color: '#ff9800', confettiColors: ['#ff9800','#ffb74d','#ffe0b2','#fff'] },
+    1500: { emoji: '\u26A1', title: '1500 LB TOTAL', color: '#ab47bc', confettiColors: ['#ab47bc','#ce93d8','#e1bee7','#fff'] },
+    2000: { emoji: '\uD83C\uDFC6', title: '2000 LB TOTAL', color: '#e53935', confettiColors: ['#e53935','#ef5350','#ef9a9a','#ffd700','#fff'] }
+  };
+
+  const AVAILABLE_TAGS = ['belt','sleeves','wraps','competition','paused','tempo','deficit','block'];
+
+  const BADGE_DEFINITIONS = [
+    // Consistency
+    { id: 'first-rep', name: 'First Rep', desc: 'Log your first set', icon: '\uD83C\uDFAF', category: 'consistency', check: () => entries.length >= 1 },
+    { id: 'week-warrior', name: 'Two-Week Warrior', desc: 'Train 14 days total', icon: '\uD83D\uDCC5', category: 'consistency', check: () => new Set(entries.map(e=>e.date)).size >= 14 },
+    { id: 'fifty-strong', name: 'Fifty Strong', desc: 'Log 50 sessions', icon: '\uD83D\uDCAA', category: 'consistency', check: () => { const s = new Set(); entries.forEach(e => s.add(e.date)); return s.size >= 50; } },
+    { id: 'century', name: 'Century Club', desc: 'Log 100 sessions', icon: '\uD83D\uDCAF', category: 'consistency', check: () => { const s = new Set(); entries.forEach(e => s.add(e.date)); return s.size >= 100; } },
+    { id: 'streak-7', name: 'Week Streak', desc: '7-day training streak', icon: '\uD83D\uDD25', category: 'consistency', check: () => { const s = calcStreak(); return s && s.longest >= 7; } },
+    { id: 'all-three', name: 'Full SBD', desc: 'Log all 3 lifts in one session', icon: '\uD83C\uDFCB\uFE0F', category: 'consistency', check: () => { const sessions = groupSessions(entries); return sessions.some(s => s.lifts.length >= 3); } },
+    // Strength
+    { id: 'bw-squat', name: 'BW Squat', desc: 'Squat your bodyweight', icon: '\uD83E\uDDB5', category: 'strength', check: () => profile.bodyweight && bestE1RM('squat') >= profile.bodyweight },
+    { id: 'bw-bench', name: 'BW Bench', desc: 'Bench your bodyweight', icon: '\uD83E\uDDBE', category: 'strength', check: () => profile.bodyweight && bestE1RM('bench') >= profile.bodyweight },
+    { id: '2x-deadlift', name: '2x BW Dead', desc: 'Deadlift 2x bodyweight', icon: '\uD83C\uDFCB\uFE0F', category: 'strength', check: () => profile.bodyweight && bestE1RM('deadlift') >= profile.bodyweight * 2 },
+    { id: '1plate', name: '1 Plate Club', desc: 'Hit 135 lbs on any lift', icon: '\uD83E\uDD49', category: 'strength', check: () => ['squat','bench','deadlift'].some(l => bestE1RM(l) >= 135) },
+    { id: '2plate', name: '2 Plate Club', desc: 'Hit 225 lbs on any lift', icon: '\uD83E\uDD48', category: 'strength', check: () => ['squat','bench','deadlift'].some(l => bestE1RM(l) >= 225) },
+    { id: '3plate', name: '3 Plate Club', desc: 'Hit 315 lbs on any lift', icon: '\uD83E\uDD47', category: 'strength', check: () => ['squat','bench','deadlift'].some(l => bestE1RM(l) >= 315) },
+    { id: '4plate', name: '4 Plate Club', desc: 'Hit 405 lbs on any lift', icon: '\uD83C\uDFC5', category: 'strength', check: () => ['squat','bench','deadlift'].some(l => bestE1RM(l) >= 405) },
+    { id: '5plate', name: '5 Plate Club', desc: 'Hit 495 lbs on any lift', icon: '\uD83D\uDC8E', category: 'strength', check: () => ['squat','bench','deadlift'].some(l => bestE1RM(l) >= 495) },
+    // Milestones
+    { id: 'total-500', name: '500 Total', desc: 'Reach a 500 lb total', icon: '\uD83D\uDCAA', category: 'milestones', check: () => { const t = getTotal(); return t && t >= 500; } },
+    { id: 'total-750', name: '750 Total', desc: 'Reach a 750 lb total', icon: '\uD83C\uDFCB\uFE0F', category: 'milestones', check: () => { const t = getTotal(); return t && t >= 750; } },
+    { id: 'total-1000', name: '1000 Total', desc: 'Reach a 1000 lb total', icon: '\uD83D\uDC51', category: 'milestones', check: () => { const t = getTotal(); return t && t >= 1000; } },
+    { id: 'total-1500', name: '1500 Total', desc: 'Reach a 1500 lb total', icon: '\u26A1', category: 'milestones', check: () => { const t = getTotal(); return t && t >= 1500; } },
+    // Volume
+    { id: 'volume-100k', name: 'Volume I', desc: 'Move 100,000 total lbs', icon: '\uD83D\uDCCA', category: 'volume', check: () => entries.reduce((s,e) => s + e.weight * e.reps, 0) >= 100000 },
+    { id: 'volume-500k', name: 'Volume II', desc: 'Move 500,000 total lbs', icon: '\uD83D\uDCC8', category: 'volume', check: () => entries.reduce((s,e) => s + e.weight * e.reps, 0) >= 500000 },
+    { id: 'volume-1m', name: 'Volume King', desc: 'Move 1,000,000 total lbs', icon: '\uD83D\uDC51', category: 'volume', check: () => entries.reduce((s,e) => s + e.weight * e.reps, 0) >= 1000000 },
+  ];
   const PROGRAM_TEMPLATES = {
     '5/3/1': {
       name: '5/3/1 Boring But Big',
@@ -1575,6 +1810,17 @@
   let statsCollapsed = {};
   try { statsCollapsed = JSON.parse(localStorage.getItem(STATS_COLLAPSED_KEY)) || {}; } catch { statsCollapsed = {}; }
   let programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {}, amrapResults: {}, tmHistory: [], autoProgressEnabled: true };
+  let autoTheme = localStorage.getItem(AUTO_THEME_KEY) === 'true';
+  let chartDateRange = 'all';
+  let historySearch = '';
+  let unlockedBadges = {};
+  try { unlockedBadges = JSON.parse(localStorage.getItem(BADGES_KEY)) || {}; } catch { unlockedBadges = {}; }
+  let dashboardWidgets = { ratios: true, fatigue: true, streak: true, recap: true, prStreak: true };
+  try { const dw = JSON.parse(localStorage.getItem(DASH_WIDGETS_KEY)); if (dw) dashboardWidgets = { ...dashboardWidgets, ...dw }; } catch {}
+  let accentColor = localStorage.getItem(ACCENT_KEY) || 'gold';
+  let challenges = [];
+  try { challenges = JSON.parse(localStorage.getItem(CHALLENGES_KEY)) || []; } catch { challenges = []; }
+  let calendarMonth = new Date();
 
   // ===== DOM REFS =====
   const $ = id => document.getElementById(id);
@@ -1611,6 +1857,7 @@
       if (e.bodyweight === undefined) e.bodyweight = null;
       if (e.cycleId === undefined) e.cycleId = null;
       if (e.repPRs === undefined) e.repPRs = [];
+      if (e.tags === undefined) e.tags = [];
     });
     rebuildPRs();
     localStorage.setItem(VERSION_KEY, CURRENT_VERSION.toString());
@@ -1642,6 +1889,34 @@
   function getTotal() {
     const s = bestE1RM('squat'), b = bestE1RM('bench'), d = bestE1RM('deadlift');
     return (s && b && d) ? s + b + d : null;
+  }
+
+  // Rate of Progression (#36)
+  function calcProgression(lift) {
+    const now = Date.now(), day = 86400000;
+    const recent = entries.filter(e => e.lift === lift && (now - e.timestamp) <= 90 * day);
+    if (recent.length < 4) return null;
+    const sorted = recent.sort((a, b) => a.timestamp - b.timestamp);
+    const third = Math.ceil(sorted.length / 3);
+    const firstThird = sorted.slice(0, third);
+    const lastThird = sorted.slice(-third);
+    const avgFirst = firstThird.reduce((s, e) => s + e.e1rm, 0) / firstThird.length;
+    const avgLast = lastThird.reduce((s, e) => s + e.e1rm, 0) / lastThird.length;
+    const daySpan = (sorted[sorted.length - 1].timestamp - sorted[0].timestamp) / day;
+    if (daySpan < 14) return null;
+    const monthRate = (avgLast - avgFirst) / (daySpan / 30);
+    return { monthRate, direction: monthRate > 1 ? 'up' : monthRate < -1 ? 'down' : 'flat' };
+  }
+
+  // Plateau Detection (#31)
+  function detectPlateau(lift) {
+    const now = Date.now(), day = 86400000;
+    const recent4w = entries.filter(e => e.lift === lift && (now - e.timestamp) <= 28 * day);
+    const older = entries.filter(e => e.lift === lift && (now - e.timestamp) > 28 * day && (now - e.timestamp) <= 56 * day);
+    if (recent4w.length < 3 || older.length < 3) return false;
+    const recentBest = Math.max(...recent4w.map(e => e.e1rm));
+    const olderBest = Math.max(...older.map(e => e.e1rm));
+    return (recentBest - olderBest) <= 2;
   }
 
   function lbsToKg(v) { return v / 2.205; }
@@ -1804,6 +2079,22 @@
     let html = `<strong>${streak.current} day${streak.current !== 1 ? 's' : ''} streak</strong>`;
     html += ` <span class="streak-detail">&middot; Best: ${streak.longest}d &middot; ${streak.weeksActive}/4 weeks active</span>`;
     $('streak-info').innerHTML = html;
+  }
+
+  // Rolling PR Tracker (#44)
+  function updatePRStreakBar() {
+    const el = $('pr-streak-bar');
+    if (!dashboardWidgets.prStreak) { el.style.display = 'none'; return; }
+    const now = Date.now(), day = 86400000;
+    const prs30 = prs.filter(p => (now - p.timestamp) <= 30 * day).length;
+    const prs90 = prs.filter(p => (now - p.timestamp) <= 90 * day).length;
+    if (prs90 === 0) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    const isHot = prs30 >= 3;
+    el.querySelector('.pr-streak-icon').textContent = isHot ? '\uD83D\uDD25' : '\uD83C\uDFC6';
+    let html = `<strong>${prs30} PR${prs30 !== 1 ? 's' : ''} last 30d</strong> &middot; ${prs90} PRs last 90d`;
+    if (isHot) html += ` <span class="hot-streak">HOT STREAK \uD83D\uDD25</span>`;
+    el.querySelector('.pr-streak-info').innerHTML = html;
   }
 
   // ===== WEEKLY RECAP =====
@@ -2321,6 +2612,28 @@
     });
   }
 
+  // Best Training Day (#40)
+  function calcBestTrainingDay() {
+    if (entries.length < 10) return null;
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const byDay = {};
+    entries.forEach(e => {
+      const d = new Date(e.date + 'T12:00:00').getDay();
+      if (!byDay[d]) byDay[d] = { total: 0, count: 0 };
+      byDay[d].total += e.e1rm;
+      byDay[d].count++;
+    });
+    const results = [];
+    for (let d = 0; d < 7; d++) {
+      if (byDay[d] && byDay[d].count >= 3) {
+        results.push({ day: d, name: dayNames[d], avg: byDay[d].total / byDay[d].count, count: byDay[d].count });
+      }
+    }
+    if (results.length === 0) return null;
+    results.sort((a, b) => b.avg - a.avg);
+    return results;
+  }
+
   // ===== MEET PREP (F8, F9) =====
   function getProjectedTotal() {
     const weeksAgo8 = Date.now() - 56 * 86400000;
@@ -2519,7 +2832,7 @@
   }
 
   // ===== ENTRY CRUD =====
-  function addEntry(lift, weight, reps, rpe, notes) {
+  function addEntry(lift, weight, reps, rpe, notes, tags) {
     const e1rm = Math.round(calcE1RM(weight, reps) * 10) / 10;
     const now = new Date();
     const isPR = checkPR(lift, e1rm);
@@ -2533,7 +2846,8 @@
       rpe, notes: notes || '', isPR,
       bodyweight: profile.bodyweight,
       cycleId: activeCycleId,
-      repPRs: isRepPR ? [reps] : []
+      repPRs: isRepPR ? [reps] : [],
+      tags: tags || []
     };
     entries.push(entry);
     if (isPR) {
@@ -2630,21 +2944,72 @@
     setTimeout(() => el.classList.remove('show'), duration || 4000);
   }
 
-  // ===== 1000LB CLUB CELEBRATION =====
-  function checkAndCelebrate1000() {
-    const total = getTotal();
-    if (!total || total < 1000) return;
-    if (localStorage.getItem(CELEBRATION_KEY)) return;
-    localStorage.setItem(CELEBRATION_KEY, Date.now().toString());
-    setTimeout(() => showCelebration(total), 600);
+  // Comeback Detection (#28)
+  function checkComeback() {
+    if (entries.length === 0) return;
+    const sorted = [...entries].sort((a, b) => b.timestamp - a.timestamp);
+    const lastDate = sorted[0].timestamp;
+    const daysSince = Math.floor((Date.now() - lastDate) / 86400000);
+    if (daysSince < 14) return;
+    const lastSession = groupSessions([...entries].sort((a, b) => b.timestamp - a.timestamp))[0];
+    if (!lastSession) return;
+    let recap = lastSession.lifts.map(l => {
+      const liftEntries = lastSession.entries.filter(e => e.lift === l);
+      const best = Math.max(...liftEntries.map(e => e.e1rm));
+      return `${LIFT_NAMES[l]} ${formatWeight(best)} e1RM`;
+    }).join(' \u00B7 ');
+    showToast(`Welcome back! ${daysSince}d since last session: ${recap}`, false, null, null);
   }
 
-  function showCelebration(total) {
+  // Badge System (#16)
+  function saveBadges() { localStorage.setItem(BADGES_KEY, JSON.stringify(unlockedBadges)); }
+
+  function checkBadges() {
+    let newBadge = null;
+    BADGE_DEFINITIONS.forEach(badge => {
+      if (unlockedBadges[badge.id]) return;
+      try {
+        if (badge.check()) {
+          unlockedBadges[badge.id] = { date: new Date().toISOString().split('T')[0], timestamp: Date.now() };
+          newBadge = badge;
+        }
+      } catch {}
+    });
+    if (newBadge) {
+      saveBadges();
+      scheduleCloudSync();
+      showToast(`${newBadge.icon} Badge unlocked: ${newBadge.name}!`);
+    }
+  }
+
+  // ===== MILESTONE CELEBRATION (generalized) =====
+  function checkAndCelebrateMilestone() {
+    const total = getTotal();
+    if (!total) return;
+    let celebrated = {};
+    try { celebrated = JSON.parse(localStorage.getItem(TOTAL_CELEBRATED_KEY)) || {}; } catch {}
+    // Find highest uncelebrated milestone
+    let target = null;
+    for (let i = TOTAL_MILESTONES.length - 1; i >= 0; i--) {
+      if (total >= TOTAL_MILESTONES[i] && !celebrated[TOTAL_MILESTONES[i]]) {
+        target = TOTAL_MILESTONES[i];
+        break;
+      }
+    }
+    if (!target) return;
+    celebrated[target] = Date.now().toString();
+    localStorage.setItem(TOTAL_CELEBRATED_KEY, JSON.stringify(celebrated));
+    const theme = TOTAL_MILESTONE_THEMES[target];
+    setTimeout(() => showCelebration(total, theme), 600);
+  }
+
+  function showCelebration(total, msTheme) {
+    msTheme = msTheme || TOTAL_MILESTONE_THEMES[1000];
     const overlay = document.createElement('div');
     overlay.className = 'celebration-overlay';
 
     // Confetti particles
-    const confettiColors = [COLORS.squat, COLORS.bench, COLORS.deadlift, '#ffd700', '#fff'];
+    const confettiColors = msTheme.confettiColors;
     for (let i = 0; i < 60; i++) {
       const p = document.createElement('div');
       p.className = 'confetti';
@@ -2665,34 +3030,33 @@
     content.className = 'celebration-content';
     content.innerHTML = `
       <button class="celebration-close" aria-label="Close">&times;</button>
-      <div class="celebration-crown">👑</div>
+      <div class="celebration-crown">${msTheme.emoji}</div>
       <div class="celebration-subtitle">WELCOME TO THE</div>
-      <div class="celebration-title">1000 LB CLUB</div>
+      <div class="celebration-title" style="color:${msTheme.color}">${msTheme.title}</div>
       <div class="celebration-total">${formatWeight(total)} ${unit}</div>
       <div class="celebration-breakdown">
         <div class="cb-lift">
           <span class="cb-label" style="color:${COLORS.squat}">SQ</span>
-          <span class="cb-value">${sq ? formatWeight(sq) : '—'}</span>
+          <span class="cb-value">${sq ? formatWeight(sq) : '\u2014'}</span>
         </div>
         <div class="cb-lift">
           <span class="cb-label" style="color:${COLORS.bench}">BP</span>
-          <span class="cb-value">${bp ? formatWeight(bp) : '—'}</span>
+          <span class="cb-value">${bp ? formatWeight(bp) : '\u2014'}</span>
         </div>
         <div class="cb-lift">
           <span class="cb-label" style="color:${COLORS.deadlift}">DL</span>
-          <span class="cb-value">${dl ? formatWeight(dl) : '—'}</span>
+          <span class="cb-value">${dl ? formatWeight(dl) : '\u2014'}</span>
         </div>
       </div>
       <div class="celebration-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
       <div class="celebration-actions">
-        <button class="celebration-share-btn">📤 Share Achievement</button>
+        <button class="celebration-share-btn">\uD83D\uDCE4 Share Achievement</button>
       </div>
     `;
 
     overlay.appendChild(content);
     document.body.appendChild(overlay);
 
-    // Dismiss handlers
     function dismiss() {
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.remove(), 500);
@@ -2704,11 +3068,12 @@
 
     content.querySelector('.celebration-share-btn').addEventListener('click', () => {
       clearTimeout(autoDismiss);
-      share1000Card(total, sq, bp, dl);
+      shareMilestoneCard(total, sq, bp, dl, msTheme);
     });
   }
 
-  function share1000Card(total, sq, bp, dl) {
+  function shareMilestoneCard(total, sq, bp, dl, msTheme) {
+    msTheme = msTheme || TOTAL_MILESTONE_THEMES[1000];
     const c = document.createElement('canvas');
     c.width = 600; c.height = 400;
     const x = c.getContext('2d');
@@ -2721,15 +3086,15 @@
     grad.addColorStop(0, COLORS.squat); grad.addColorStop(0.5, COLORS.bench); grad.addColorStop(1, COLORS.deadlift);
     x.fillStyle = grad; x.fillRect(0, 0, 600, 6);
 
-    // Crown
+    // Crown/emoji
     x.font = '40px serif'; x.textAlign = 'center';
-    x.fillText('👑', 300, 55);
+    x.fillText(msTheme.emoji, 300, 55);
 
-    // "1000 LB CLUB" title with gold glow
+    // Title with glow
     x.save();
-    x.shadowColor = '#ffd700'; x.shadowBlur = 20;
-    x.font = 'bold 42px -apple-system, sans-serif'; x.fillStyle = '#ffd700';
-    x.fillText('1000 LB CLUB', 300, 110);
+    x.shadowColor = msTheme.color; x.shadowBlur = 20;
+    x.font = 'bold 42px -apple-system, sans-serif'; x.fillStyle = msTheme.color;
+    x.fillText(msTheme.title, 300, 110);
     x.restore();
 
     // Total
@@ -2813,6 +3178,23 @@
       const cls = getClassification(lift, best);
       if (cls) { badgeEl.textContent = cls; badgeEl.className = 'class-badge ' + cls; badgeEl.style.display = ''; }
       else { badgeEl.style.display = 'none'; }
+      // Rate of progression (#36)
+      let trendEl = card.querySelector('.card-trend');
+      if (!trendEl) { trendEl = document.createElement('div'); trendEl.className = 'card-trend'; card.appendChild(trendEl); }
+      const prog = calcProgression(lift);
+      if (prog) {
+        const arrow = prog.direction === 'up' ? '\u2191' : prog.direction === 'down' ? '\u2193' : '\u2192';
+        trendEl.textContent = `${arrow} ${Math.abs(prog.monthRate).toFixed(1)} ${unit}/mo`;
+        trendEl.className = 'card-trend ' + prog.direction;
+        trendEl.style.display = '';
+      } else { trendEl.style.display = 'none'; }
+      // Plateau detection (#31)
+      let platEl = card.querySelector('.plateau-icon');
+      if (!platEl) { platEl = document.createElement('span'); platEl.className = 'plateau-icon'; card.querySelector('.card-label').appendChild(platEl); }
+      if (best && detectPlateau(lift)) {
+        platEl.innerHTML = '\u26A0\uFE0F<span class="plateau-tooltip">Plateau detected: no e1RM gain in 4+ weeks</span>';
+        platEl.style.display = 'inline';
+      } else { platEl.style.display = 'none'; }
     });
 
     const totalEl = $('dash-total');
@@ -2839,12 +3221,15 @@
     if (oc) { tBadge.textContent = oc; tBadge.className = 'class-badge ' + oc; tBadge.style.display = ''; }
     else { tBadge.style.display = 'none'; }
 
-    updateStrengthRatios();
+    // Dashboard widget visibility
+    if (dashboardWidgets.ratios) updateStrengthRatios(); else $('strength-ratios').style.display = 'none';
     updateScoreLine();
-    updateFatigueBar();
-    updateStreakBar();
-    renderRecapCard();
-    checkAndCelebrate1000();
+    if (dashboardWidgets.fatigue) updateFatigueBar(); else $('fatigue-bar').style.display = 'none';
+    if (dashboardWidgets.streak) updateStreakBar(); else $('streak-bar').style.display = 'none';
+    if (dashboardWidgets.recap) renderRecapCard(); else $('recap-card').style.display = 'none';
+    updatePRStreakBar();
+    checkAndCelebrateMilestone();
+    checkBadges();
   }
 
   // F1: Strength Ratios
@@ -2914,7 +3299,8 @@
     const w = parseFloat(weightInput.value), r = parseInt(repsInput.value);
     if (!(w > 0 && r > 0)) return;
     const notes = notesInput.value.trim();
-    const { entry, isPR, isRepPR, milestone } = addEntry(currentLift, inputToLbs(w), r, currentRPE, notes);
+    const activeTags = [...document.querySelectorAll('#log-tags .tag-pill.active')].map(t => t.dataset.tag);
+    const { entry, isPR, isRepPR, milestone } = addEntry(currentLift, inputToLbs(w), r, currentRPE, notes, activeTags);
     weightInput.value = ''; repsInput.value = '';
     updatePreview(); updateDashboard();
     if (currentTab === 'history') renderHistory();
@@ -3165,6 +3551,12 @@
     renderHistory();
   });
 
+  // History search (#80)
+  $('history-search').addEventListener('input', e => {
+    historySearch = e.target.value.trim().toLowerCase();
+    renderHistory();
+  });
+
   // Date filter toggle
   $('date-toggle-btn').addEventListener('click', () => {
     showDateFilters = !showDateFilters;
@@ -3180,10 +3572,26 @@
     if (historyFilter !== 'all') filtered = filtered.filter(e => e.lift === historyFilter);
     if (historyFrom) filtered = filtered.filter(e => e.date >= historyFrom);
     if (historyTo) filtered = filtered.filter(e => e.date <= historyTo);
+    // Search filter (#80)
+    if (historySearch) {
+      const q = historySearch;
+      const rangeMatch = q.match(/^(\d+)-(\d+)$/);
+      const rpeMatch = q.match(/^rpe\s*(\d+\.?\d*)$/);
+      filtered = filtered.filter(e => {
+        if (rangeMatch) {
+          const lo = parseFloat(rangeMatch[1]), hi = parseFloat(rangeMatch[2]);
+          const w = displayWeight(e.weight);
+          return w >= lo && w <= hi;
+        }
+        if (rpeMatch) return e.rpe !== null && e.rpe === parseFloat(rpeMatch[1]);
+        const searchStr = `${LIFT_NAMES[e.lift]} ${e.lift} ${formatWeight(e.weight)} ${e.notes || ''} ${(e.tags||[]).join(' ')}`.toLowerCase();
+        return searchStr.includes(q);
+      });
+    }
 
     if (filtered.length === 0) {
       container.innerHTML = '<div class="empty-state"><div class="icon">&#127947;&#65039;</div>No entries' +
-        (historyFilter !== 'all' || historyFrom || historyTo ? ' match filters.' : ' yet.<br>Log your first set!') + '</div>';
+        (historyFilter !== 'all' || historyFrom || historyTo || historySearch ? ' match filters.' : ' yet.<br>Log your first set!') + '</div>';
       return;
     }
 
@@ -3225,6 +3633,7 @@
             <span class="history-e1rm" style="font-size:0.7rem"> = ${formatWeight(e.e1rm)} e1RM</span>
             ${e.isPR ? ' <span class="pr-badge">PR</span>' : ''}${repPRBadge}</div>
             ${metaParts.length ? `<div class="history-meta" style="font-size:0.65rem">${metaParts.join(' &middot; ')}</div>` : ''}
+            ${(e.tags && e.tags.length) ? e.tags.map(t => `<span class="tag-chip">${t}</span>`).join('') : ''}
           </div>
           <div class="history-actions">
             <button class="edit-btn" data-id="${e.id}" title="Edit">&#9998;</button>
@@ -3358,6 +3767,23 @@
     clearConfirm = false;
     const body = $('settings-body');
     body.innerHTML = `
+      <div style="font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:6px">Theme</div>
+      <label class="widget-toggle" style="margin-bottom:4px">
+        <input type="checkbox" id="s-auto-theme" ${autoTheme ? 'checked' : ''}>
+        Follow system theme (auto)
+      </label>
+      <div style="font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin:12px 0 6px">Accent Color</div>
+      <div class="accent-picker" id="s-accent-picker">
+        ${Object.entries(ACCENT_COLORS).map(([name, color]) =>
+          `<div class="accent-swatch${accentColor === name ? ' active' : ''}" data-accent="${name}" style="background:${color}" title="${name}"></div>`
+        ).join('')}
+      </div>
+      <div style="font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin:12px 0 6px">Dashboard Widgets</div>
+      <label class="widget-toggle"><input type="checkbox" data-widget="ratios" ${dashboardWidgets.ratios ? 'checked' : ''}> Strength Ratios</label>
+      <label class="widget-toggle"><input type="checkbox" data-widget="fatigue" ${dashboardWidgets.fatigue ? 'checked' : ''}> Fatigue Indicator</label>
+      <label class="widget-toggle"><input type="checkbox" data-widget="streak" ${dashboardWidgets.streak ? 'checked' : ''}> Streak Tracker</label>
+      <label class="widget-toggle"><input type="checkbox" data-widget="recap" ${dashboardWidgets.recap ? 'checked' : ''}> Weekly Recap</label>
+      <label class="widget-toggle" style="margin-bottom:12px"><input type="checkbox" data-widget="prStreak" ${dashboardWidgets.prStreak ? 'checked' : ''}> PR Tracker</label>
       <div class="data-row" style="margin-bottom:12px">
         <button class="data-btn" id="s-export">Export JSON</button>
         <button class="data-btn" id="s-import">Import JSON</button>
@@ -3366,6 +3792,35 @@
     `;
     $('settings-modal').style.display = '';
     document.body.style.overflow = 'hidden';
+
+    // Auto-theme toggle
+    $('s-auto-theme').addEventListener('change', e => {
+      autoTheme = e.target.checked;
+      applyTheme();
+      if (currentTab === 'charts') renderChart();
+    });
+
+    // Accent picker
+    $('s-accent-picker').addEventListener('click', e => {
+      const swatch = e.target.closest('.accent-swatch');
+      if (!swatch) return;
+      $('s-accent-picker').querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+      accentColor = swatch.dataset.accent;
+      localStorage.setItem(ACCENT_KEY, accentColor);
+      applyAccentColor();
+      scheduleCloudSync();
+    });
+
+    // Dashboard widget toggles
+    body.querySelectorAll('[data-widget]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        dashboardWidgets[cb.dataset.widget] = cb.checked;
+        localStorage.setItem(DASH_WIDGETS_KEY, JSON.stringify(dashboardWidgets));
+        scheduleCloudSync();
+        updateDashboard();
+      });
+    });
 
     $('s-export').addEventListener('click', exportData);
     $('s-import').addEventListener('click', () => $('import-file').click());
@@ -3384,11 +3839,19 @@
       localStorage.removeItem(PROGRAMS_KEY);
       localStorage.removeItem(RECAP_WEEK_KEY);
       localStorage.removeItem(CELEBRATION_KEY);
+      localStorage.removeItem(BADGES_KEY);
+      localStorage.removeItem(TOTAL_CELEBRATED_KEY);
+      localStorage.removeItem(DASH_WIDGETS_KEY);
+      localStorage.removeItem(ACCENT_KEY);
+      localStorage.removeItem(CHALLENGES_KEY);
       entries = []; prs = []; cycles = [];
       profile = { gender: null, bodyweight: null, bodyweightHistory: [] };
       goals = { squat: null, bench: null, deadlift: null, total: null };
       activeCycleId = null; lastLoggedSet = null;
       programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {}, amrapResults: {}, tmHistory: [], autoProgressEnabled: true };
+      unlockedBadges = {}; challenges = [];
+      dashboardWidgets = { ratios: true, fatigue: true, streak: true, recap: true, prStreak: true };
+      accentColor = 'gold'; applyAccentColor();
       closeModal('settings-modal');
       updateDashboard(); renderCycleBar(); renderProgramSection();
       $('repeat-btn').classList.remove('visible');
@@ -3404,7 +3867,8 @@
       entries, profile, goals, prs, cycles,
       programs: programConfig,
       unit: localStorage.getItem(UNIT_KEY) || 'lbs',
-      theme
+      theme, badges: unlockedBadges,
+      dashboardWidgets, accentColor, challenges
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -3432,6 +3896,10 @@
         if (data.programs) { programConfig = data.programs; saveProgramConfig(); }
         if (data.unit) { unit = data.unit; localStorage.setItem(UNIT_KEY, unit); }
         if (data.theme) { theme = data.theme; applyTheme(); }
+        if (data.badges) { unlockedBadges = data.badges; saveBadges(); }
+        if (data.dashboardWidgets) { dashboardWidgets = { ...dashboardWidgets, ...data.dashboardWidgets }; localStorage.setItem(DASH_WIDGETS_KEY, JSON.stringify(dashboardWidgets)); }
+        if (data.accentColor) { accentColor = data.accentColor; localStorage.setItem(ACCENT_KEY, accentColor); applyAccentColor(); }
+        if (data.challenges) { challenges = data.challenges; localStorage.setItem(CHALLENGES_KEY, JSON.stringify(challenges)); }
         if (!profile.bodyweightHistory) profile.bodyweightHistory = [];
         activeCycleId = (cycles.find(c => c.active) || {}).id || null;
         localStorage.setItem(VERSION_KEY, CURRENT_VERSION.toString());
@@ -3454,6 +3922,23 @@
   });
 
   // ===== CHARTS TAB =====
+  // Chart date range pills (#82)
+  $('chart-date-range').addEventListener('click', e => {
+    const pill = e.target.closest('.range-pill');
+    if (!pill) return;
+    $('chart-date-range').querySelectorAll('.range-pill').forEach(b => b.classList.remove('active'));
+    pill.classList.add('active');
+    chartDateRange = pill.dataset.range;
+    renderChart();
+  });
+
+  function getChartDateCutoff() {
+    if (chartDateRange === 'all') return null;
+    const days = parseInt(chartDateRange);
+    const cutoff = new Date(Date.now() - days * 86400000);
+    return cutoff.toISOString().split('T')[0];
+  }
+
   // Chart type selector
   document.querySelectorAll('.chart-type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3462,7 +3947,9 @@
       chartType = btn.dataset.type;
       // Show/hide lift filters
       $('chart-filters').style.display = (chartType === 'e1rm' || chartType === 'volume') ? 'flex' : 'none';
-      if (chartType === 'heatmap') $('chart-filters').style.display = 'none';
+      if (chartType === 'heatmap' || chartType === 'calendar') $('chart-filters').style.display = 'none';
+      // Show/hide date range for heatmap/calendar
+      $('chart-date-range').style.display = (chartType === 'heatmap' || chartType === 'calendar') ? 'none' : 'flex';
       renderChart();
     });
   });
@@ -3478,6 +3965,21 @@
   });
 
   function renderChart() {
+    // Calendar is HTML-based, not canvas
+    const calEl = document.getElementById('calendar-view');
+    if (chartType === 'calendar') {
+      canvas.style.display = 'none';
+      if (!calEl) {
+        const div = document.createElement('div');
+        div.id = 'calendar-view';
+        canvas.parentElement.appendChild(div);
+      }
+      renderCalendar();
+      return;
+    } else {
+      canvas.style.display = '';
+      if (calEl) calEl.innerHTML = '';
+    }
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.parentElement.getBoundingClientRect();
     const w = rect.width - 24;
@@ -3533,6 +4035,7 @@
     if (entries.length === 0) { drawEmpty(w, h, 'No data yet'); return; }
     const pad = { top: 20, right: 16, bottom: 40, left: 50 };
     const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+    const dateCutoff = getChartDateCutoff();
 
     const liftsToShow = chartFilter === 'all' ? ['squat','bench','deadlift']
       : chartFilter === 'total' ? [] : [chartFilter];
@@ -3540,7 +4043,7 @@
 
     function buildSeries(lift) {
       const byDate = {};
-      entries.filter(e => e.lift === lift).forEach(e => {
+      entries.filter(e => e.lift === lift && (!dateCutoff || e.date >= dateCutoff)).forEach(e => {
         if (!byDate[e.date] || e.e1rm > byDate[e.date].e1rm) byDate[e.date] = e;
       });
       return Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]))
@@ -3550,7 +4053,7 @@
     const series = {};
     liftsToShow.forEach(l => series[l] = buildSeries(l));
     if (showTotal) {
-      const allDates = new Set(); entries.forEach(e => allDates.add(e.date));
+      const allDates = new Set(); entries.filter(e => !dateCutoff || e.date >= dateCutoff).forEach(e => allDates.add(e.date));
       const sortedD = [...allDates].sort();
       const running = { squat: 0, bench: 0, deadlift: 0 };
       series.total = [];
@@ -3610,10 +4113,12 @@
     const pad = { top: 20, right: 16, bottom: 40, left: 55 };
     const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
     const lifts = chartFilter === 'all' ? ['squat','bench','deadlift'] : [chartFilter];
+    const dateCutoff = getChartDateCutoff();
 
     const byDate = {};
     entries.forEach(e => {
       if (chartFilter !== 'all' && e.lift !== chartFilter) return;
+      if (dateCutoff && e.date < dateCutoff) return;
       if (!byDate[e.date]) byDate[e.date] = { squat: 0, bench: 0, deadlift: 0 };
       byDate[e.date][e.lift] += e.weight * e.reps;
     });
@@ -3649,8 +4154,11 @@
     if (bwh.length === 0) { drawEmpty(w, h, 'No bodyweight data yet'); return; }
     const pad = { top: 20, right: 16, bottom: 40, left: 50 };
     const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+    const dateCutoff = getChartDateCutoff();
 
-    const sorted = [...bwh].sort((a, b) => a.timestamp - b.timestamp);
+    let sorted = [...bwh].sort((a, b) => a.timestamp - b.timestamp);
+    if (dateCutoff) sorted = sorted.filter(b => b.date >= dateCutoff);
+    if (sorted.length === 0) { drawEmpty(w, h, 'No data in range'); return; }
     const dates = sorted.map(b => b.date);
     const vals = sorted.map(b => displayWeight(b.weight));
     const minVal = Math.floor(Math.min(...vals) * 0.95);
@@ -3662,6 +4170,7 @@
     const xPos = i => pad.left + (dates.length === 1 ? cw / 2 : (i / (dates.length - 1)) * cw);
     const yPos = v => pad.top + ch - ((v - minVal) / valRange) * ch;
 
+    // Raw line
     ctx.strokeStyle = '#aaa'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
     ctx.beginPath();
     sorted.forEach((b, i) => {
@@ -3674,6 +4183,25 @@
       ctx.beginPath(); ctx.arc(xPos(i), yPos(displayWeight(b.weight)), 3, 0, Math.PI * 2);
       ctx.fillStyle = '#aaa'; ctx.fill();
     });
+
+    // 7-day rolling average (#87)
+    if (sorted.length >= 3) {
+      ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let started = false;
+      sorted.forEach((b, i) => {
+        const windowStart = new Date(new Date(b.date + 'T12:00:00').getTime() - 7 * 86400000).toISOString().split('T')[0];
+        const windowPts = sorted.filter(p => p.date >= windowStart && p.date <= b.date);
+        const avg = windowPts.reduce((s, p) => s + displayWeight(p.weight), 0) / windowPts.length;
+        const x = xPos(i), y = yPos(avg);
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      // Legend
+      ctx.font = '11px -apple-system, sans-serif';
+      ctx.fillStyle = '#aaa'; ctx.textAlign = 'left'; ctx.fillText('Raw', pad.left + 5, pad.top + 12);
+      ctx.fillStyle = '#ffd700'; ctx.fillText('7d Avg', pad.left + 40, pad.top + 12);
+    }
   }
 
   // Wilks/DOTS Chart
@@ -3683,8 +4211,10 @@
     }
     const pad = { top: 20, right: 16, bottom: 40, left: 50 };
     const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+    const dateCutoff = getChartDateCutoff();
 
-    const allDates = [...new Set(entries.map(e => e.date))].sort();
+    let allDates = [...new Set(entries.map(e => e.date))].sort();
+    if (dateCutoff) allDates = allDates.filter(d => d >= dateCutoff);
     const running = { squat: 0, bench: 0, deadlift: 0 };
     const bwHist = [...(profile.bodyweightHistory || [])].sort((a, b) => a.timestamp - b.timestamp);
     const dataPoints = [];
@@ -3839,6 +4369,96 @@
     ctx.fillStyle = '#666'; ctx.fillText('More', legendX + 88, legendY);
   }
 
+  // Training Calendar (#71)
+  function renderCalendar() {
+    const el = document.getElementById('calendar-view');
+    if (!el) return;
+    const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDow = (firstDay.getDay() + 6) % 7; // Monday = 0
+    const daysInMonth = lastDay.getDate();
+    const today = new Date().toISOString().split('T')[0];
+
+    // Build data maps
+    const dayData = {};
+    entries.forEach(e => {
+      const d = e.date;
+      if (d.slice(0, 7) !== `${year}-${String(month + 1).padStart(2, '0')}`) return;
+      if (!dayData[d]) dayData[d] = { lifts: new Set(), hasPR: false, entries: [] };
+      dayData[d].lifts.add(e.lift);
+      if (e.isPR) dayData[d].hasPR = true;
+      dayData[d].entries.push(e);
+    });
+
+    const monthLabel = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    let html = `<div class="calendar-nav">
+      <button class="calendar-nav-btn" id="cal-prev">&larr;</button>
+      <span class="calendar-month-label">${monthLabel}</span>
+      <button class="calendar-nav-btn" id="cal-next">&rarr;</button>
+    </div>`;
+    html += `<div class="calendar-grid">`;
+    ['M','T','W','T','F','S','S'].forEach(d => html += `<div class="calendar-day-header">${d}</div>`);
+
+    // Empty cells before first day
+    for (let i = 0; i < startDow; i++) html += `<div class="calendar-cell"></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const data = dayData[dateStr];
+      const isToday = dateStr === today;
+      const classes = ['calendar-cell'];
+      if (data) classes.push('has-data');
+      if (isToday) classes.push('today');
+
+      html += `<div class="${classes.join(' ')}" data-date="${dateStr}">`;
+      html += `<span>${d}</span>`;
+      if (data) {
+        if (data.hasPR) html += `<span class="calendar-pr-star">\u2605</span>`;
+        html += `<div class="calendar-dots">`;
+        [...data.lifts].forEach(l => html += `<div class="calendar-dot" style="background:${COLORS[l]}"></div>`);
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+    el.innerHTML = html;
+
+    // Navigation
+    el.querySelector('#cal-prev').addEventListener('click', () => {
+      calendarMonth = new Date(year, month - 1, 1);
+      renderCalendar();
+    });
+    el.querySelector('#cal-next').addEventListener('click', () => {
+      calendarMonth = new Date(year, month + 1, 1);
+      renderCalendar();
+    });
+
+    // Click day → show session in edit modal
+    el.querySelectorAll('.calendar-cell.has-data').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const date = cell.dataset.date;
+        const dayEntries = entries.filter(e => e.date === date).sort((a, b) => b.timestamp - a.timestamp);
+        if (dayEntries.length === 0) return;
+        const body = $('edit-body');
+        const d = new Date(date + 'T12:00:00');
+        const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        let mhtml = `<div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px">${label} &middot; ${dayEntries.length} sets</div>`;
+        dayEntries.forEach(e => {
+          mhtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span style="color:${COLORS[e.lift]};font-weight:600;font-size:0.75rem;min-width:22px">${LIFT_SHORT[e.lift]}</span>
+            <span style="font-size:0.85rem">${formatWeight(e.weight)} ${unit} &times; ${e.reps} = ${formatWeight(e.e1rm)} e1RM</span>
+            ${e.isPR ? '<span class="pr-badge">PR</span>' : ''}
+          </div>`;
+        });
+        $('edit-modal').querySelector('h3').textContent = 'Session Detail';
+        body.innerHTML = mhtml;
+        $('edit-modal').style.display = '';
+        document.body.style.overflow = 'hidden';
+      });
+    });
+  }
+
   // Chart tooltip
   canvas.addEventListener('mousemove', handleChartHover);
   canvas.addEventListener('touchmove', e => {
@@ -3889,6 +4509,29 @@
         <div class="stats-body">`;
     }
     const secEnd = `</div></div>`;
+
+    // 0. Badges (#17)
+    const totalBadges = BADGE_DEFINITIONS.length;
+    const unlockedCount = Object.keys(unlockedBadges).length;
+    html += sec('badges', `Badges (${unlockedCount}/${totalBadges})`);
+    const categories = ['consistency','strength','milestones','volume'];
+    const catLabels = { consistency: 'Consistency', strength: 'Strength', milestones: 'Milestones', volume: 'Volume' };
+    categories.forEach(cat => {
+      const badges = BADGE_DEFINITIONS.filter(b => b.category === cat);
+      html += `<div class="badge-category-label">${catLabels[cat]}</div><div class="badge-grid">`;
+      badges.forEach(b => {
+        const unlocked = unlockedBadges[b.id];
+        if (unlocked) {
+          const d = new Date(unlocked.date + 'T12:00:00');
+          const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          html += `<div class="badge-card"><span class="badge-icon">${b.icon}</span><div class="badge-name">${b.name}</div><div class="badge-date">${dateStr}</div></div>`;
+        } else {
+          html += `<div class="badge-card locked"><span class="badge-icon">${b.icon}</span><div class="badge-name">???</div><div class="badge-date" style="font-style:italic">${b.desc}</div></div>`;
+        }
+      });
+      html += `</div>`;
+    });
+    html += secEnd;
 
     // 1. Profile
     html += sec('profile', 'Profile');
@@ -4128,7 +4771,83 @@
     }
     html += secEnd;
 
-    // 9. Data Management
+    // 9. Training Insights (#40)
+    html += sec('training-insights', 'Training Insights');
+    const btd = calcBestTrainingDay();
+    if (btd && btd.length > 0) {
+      html += `<div style="font-size:var(--text-sm);color:var(--text-dim);margin-bottom:8px">Your strongest day is <strong style="color:var(--text)">${btd[0].name}</strong></div>`;
+      const maxAvg = btd[0].avg;
+      btd.forEach(d => {
+        const pct = maxAvg > 0 ? (d.avg / maxAvg * 100) : 0;
+        html += `<div class="vol-row">
+          <span class="vol-period-label" style="min-width:32px">${d.name.slice(0, 3)}</span>
+          <div class="vol-bars"><div class="vol-bar-seg" style="width:${pct}%;background:var(--bench)"></div></div>
+          <span class="vol-total">${formatWeight(d.avg)}</span>
+        </div>`;
+      });
+    } else {
+      html += `<div class="stats-hint">Need 10+ entries with 3+ per day shown</div>`;
+    }
+    html += secEnd;
+
+    // 10. Period Comparison (#33)
+    html += sec('period-comparison', 'Period Comparison');
+    html += `<div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <select class="compare-select" id="compare-a">
+        <option value="this-month">This Month</option>
+        <option value="last-month" selected>Last Month</option>
+        <option value="last-30">Last 30d</option>
+        <option value="last-90">Last 90d</option>
+      </select>
+      <span style="color:var(--text-dim);font-size:var(--text-sm)">vs</span>
+      <select class="compare-select" id="compare-b">
+        <option value="this-month" selected>This Month</option>
+        <option value="last-month">Last Month</option>
+        <option value="last-30">Last 30d</option>
+        <option value="last-90">Last 90d</option>
+      </select>
+    </div>
+    <div id="compare-results"></div>`;
+    html += secEnd;
+
+    // 11. Challenges (#23)
+    html += sec('challenges', 'Challenges');
+    html += `<button class="data-btn" id="add-challenge-btn" style="margin-bottom:10px;width:100%">+ New Challenge</button>`;
+    html += `<div id="challenges-list">`;
+    if (challenges.length > 0) {
+      challenges.forEach((ch, i) => {
+        const lift = ch.lift;
+        const cur = lift === 'total' ? getTotal() : bestE1RM(lift);
+        const pct = cur ? Math.min(100, Math.max(0, (cur - ch.start) / (ch.target - ch.start) * 100)) : 0;
+        const deadline = new Date(ch.deadline + 'T12:00:00');
+        const daysLeft = Math.ceil((deadline.getTime() - Date.now()) / 86400000);
+        const complete = cur && cur >= ch.target;
+        html += `<div class="challenge-card">
+          <div class="challenge-header">
+            <span class="challenge-title" style="color:${COLORS[lift] || 'var(--text)'}">${ch.name || LIFT_NAMES[lift] || lift} ${formatWeight(ch.target)} ${unit}</span>
+            <span class="challenge-deadline">${complete ? '<span class="challenge-complete">\u2713 Done!</span>' : (daysLeft > 0 ? daysLeft + 'd left' : 'Expired')}</span>
+          </div>
+          <div class="challenge-progress-track">
+            <div class="challenge-progress-fill" style="width:${pct}%;background:${COLORS[lift] || 'var(--bench)'}"></div>
+          </div>
+          <div class="challenge-pct">${Math.round(pct)}% &middot; ${cur ? formatWeight(cur) : '\u2014'} / ${formatWeight(ch.target)}
+            <button class="delete-btn" data-del-challenge="${i}" style="margin-left:8px;font-size:0.6rem">Del</button>
+          </div>
+        </div>`;
+      });
+    } else {
+      html += `<div class="stats-hint">Set a goal and deadline to challenge yourself</div>`;
+    }
+    html += `</div>`;
+    html += secEnd;
+
+    // 12. Year in Review (#29)
+    html += sec('year-in-review', 'Year in Review');
+    html += `<button class="data-btn" id="yir-btn" style="width:100%">Generate ${new Date().getFullYear()} Review</button>`;
+    html += `<div id="yir-content"></div>`;
+    html += secEnd;
+
+    // 13. Data Management
     html += sec('data-management', 'Data Management');
     html += `<div class="data-row">
         <button class="data-btn" id="stats-export">Export JSON</button>
@@ -4243,6 +4962,162 @@
       });
     });
 
+    // Period comparison (#33)
+    const compareA = $('compare-a'), compareB = $('compare-b');
+    if (compareA && compareB) {
+      function runComparison() {
+        function getPeriodRange(val) {
+          const now = new Date(), day = 86400000;
+          if (val === 'this-month') return { start: now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01', end: now.toISOString().split('T')[0] };
+          if (val === 'last-month') {
+            const lm = new Date(now.getFullYear(), now.getMonth()-1, 1);
+            const lme = new Date(now.getFullYear(), now.getMonth(), 0);
+            return { start: lm.toISOString().split('T')[0], end: lme.toISOString().split('T')[0] };
+          }
+          if (val === 'last-30') return { start: new Date(Date.now()-30*day).toISOString().split('T')[0], end: now.toISOString().split('T')[0] };
+          if (val === 'last-90') return { start: new Date(Date.now()-90*day).toISOString().split('T')[0], end: now.toISOString().split('T')[0] };
+          return { start: '2000-01-01', end: now.toISOString().split('T')[0] };
+        }
+        function calcPeriodStats(start, end) {
+          const pe = entries.filter(e => e.date >= start && e.date <= end);
+          return {
+            sets: pe.length,
+            volume: pe.reduce((s,e) => s + e.weight*e.reps, 0),
+            trainingDays: new Set(pe.map(e => e.date)).size,
+            prs: pe.filter(e => e.isPR).length,
+            squat: Math.max(0, ...pe.filter(e=>e.lift==='squat').map(e=>e.e1rm)),
+            bench: Math.max(0, ...pe.filter(e=>e.lift==='bench').map(e=>e.e1rm)),
+            deadlift: Math.max(0, ...pe.filter(e=>e.lift==='deadlift').map(e=>e.e1rm)),
+          };
+        }
+        const rA = getPeriodRange(compareA.value), rB = getPeriodRange(compareB.value);
+        const sA = calcPeriodStats(rA.start, rA.end), sB = calcPeriodStats(rB.start, rB.end);
+        function ind(a, b) { return a > b ? '<span class="compare-indicator up">\u2191</span>' : a < b ? '<span class="compare-indicator down">\u2193</span>' : '<span class="compare-indicator same">=</span>'; }
+        const cRes = $('compare-results');
+        cRes.innerHTML = `<div class="compare-grid">
+          <div class="compare-label">Overview</div>
+          <div class="compare-val">${sA.sets} sets</div>${ind(sA.sets, sB.sets)}<div class="compare-val">${sB.sets} sets</div>
+          <div class="compare-val">${fmtNum(displayWeight(sA.volume))} vol</div>${ind(sA.volume, sB.volume)}<div class="compare-val">${fmtNum(displayWeight(sB.volume))} vol</div>
+          <div class="compare-val">${sA.trainingDays} days</div>${ind(sA.trainingDays, sB.trainingDays)}<div class="compare-val">${sB.trainingDays} days</div>
+          <div class="compare-val">${sA.prs} PRs</div>${ind(sA.prs, sB.prs)}<div class="compare-val">${sB.prs} PRs</div>
+          <div class="compare-label">Best e1RM</div>
+          ${['squat','bench','deadlift'].map(l => `<div class="compare-val" style="color:${COLORS[l]}">${sA[l] > 0 ? formatWeight(sA[l]) : '\u2014'}</div>${ind(sA[l], sB[l])}<div class="compare-val" style="color:${COLORS[l]}">${sB[l] > 0 ? formatWeight(sB[l]) : '\u2014'}</div>`).join('')}
+        </div>`;
+      }
+      compareA.addEventListener('change', runComparison);
+      compareB.addEventListener('change', runComparison);
+      runComparison();
+    }
+
+    // Challenge listeners (#23)
+    const addChBtn = $('add-challenge-btn');
+    if (addChBtn) addChBtn.addEventListener('click', () => {
+      const body = $('edit-body');
+      body.innerHTML = `
+        <div class="input-group" style="margin-bottom:8px"><label>Lift</label>
+          <select id="ch-lift" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem">
+            ${['squat','bench','deadlift','total'].map(l => `<option value="${l}">${l === 'total' ? 'Total' : LIFT_NAMES[l]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom:8px"><label>Target (${unit})</label>
+          <input type="number" id="ch-target" placeholder="e.g. 405" inputmode="decimal" step="any" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem;outline:none">
+        </div>
+        <div class="input-group" style="margin-bottom:12px"><label>Deadline</label>
+          <input type="date" id="ch-deadline" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem;outline:none">
+        </div>
+        <button class="modal-save-btn" id="ch-save">Create Challenge</button>`;
+      $('edit-modal').querySelector('h3').textContent = 'New Challenge';
+      $('edit-modal').style.display = '';
+      document.body.style.overflow = 'hidden';
+      $('ch-save').addEventListener('click', () => {
+        const lift = $('ch-lift').value;
+        const target = parseFloat($('ch-target').value);
+        const deadline = $('ch-deadline').value;
+        if (!(target > 0) || !deadline) return;
+        const cur = lift === 'total' ? getTotal() : bestE1RM(lift);
+        challenges.push({ lift, target: inputToLbs(target), deadline, start: cur || 0, created: Date.now() });
+        localStorage.setItem(CHALLENGES_KEY, JSON.stringify(challenges));
+        scheduleCloudSync();
+        closeModal('edit-modal');
+        renderStats();
+        showToast('Challenge created!');
+      });
+    });
+
+    // Delete challenge
+    document.querySelectorAll('[data-del-challenge]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.delChallenge);
+        challenges.splice(idx, 1);
+        localStorage.setItem(CHALLENGES_KEY, JSON.stringify(challenges));
+        scheduleCloudSync();
+        renderStats();
+      });
+    });
+
+    // Year in Review (#29)
+    const yirBtn = $('yir-btn');
+    if (yirBtn) yirBtn.addEventListener('click', () => {
+      const year = new Date().getFullYear();
+      const yearEntries = entries.filter(e => e.date.startsWith(year.toString()));
+      if (yearEntries.length === 0) { showToast('No data for ' + year); return; }
+      const totalSets = yearEntries.length;
+      const totalVol = yearEntries.reduce((s,e) => s + e.weight * e.reps, 0);
+      const totalPRs = yearEntries.filter(e => e.isPR).length;
+      const days = new Set(yearEntries.map(e => e.date)).size;
+      const liftCounts = { squat: 0, bench: 0, deadlift: 0 };
+      yearEntries.forEach(e => liftCounts[e.lift]++);
+      const mostTrained = Object.entries(liftCounts).sort((a,b) => b[1]-a[1])[0];
+      const biggestPR = yearEntries.filter(e => e.isPR).sort((a,b) => b.e1rm - a.e1rm)[0];
+      const badgeCount = Object.values(unlockedBadges).filter(b => b.date && b.date.startsWith(year.toString())).length;
+
+      let rhtml = `<div class="yir-stat-grid">
+        <div class="yir-stat"><div class="yir-stat-label">Total Sets</div><div class="yir-stat-value">${fmtNum(totalSets)}</div></div>
+        <div class="yir-stat"><div class="yir-stat-label">Volume</div><div class="yir-stat-value">${fmtNum(displayWeight(totalVol))} ${unit}</div></div>
+        <div class="yir-stat"><div class="yir-stat-label">Training Days</div><div class="yir-stat-value">${days}</div></div>
+        <div class="yir-stat"><div class="yir-stat-label">PRs</div><div class="yir-stat-value">${totalPRs}</div></div>
+        <div class="yir-stat"><div class="yir-stat-label">Most Trained</div><div class="yir-stat-value" style="color:${COLORS[mostTrained[0]]}">${LIFT_NAMES[mostTrained[0]]}</div></div>
+        <div class="yir-stat"><div class="yir-stat-label">Badges Earned</div><div class="yir-stat-value">${badgeCount}</div></div>
+      </div>`;
+      if (biggestPR) {
+        rhtml += `<div style="text-align:center;padding:8px;background:var(--gold-bg);border-radius:8px;margin-bottom:8px">
+          <div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase">Biggest PR</div>
+          <div style="font-size:1rem;font-weight:700;color:${COLORS[biggestPR.lift]}">${LIFT_NAMES[biggestPR.lift]} ${formatWeight(biggestPR.e1rm)} ${unit}</div>
+        </div>`;
+      }
+      rhtml += `<button class="data-btn" id="yir-share" style="width:100%">\uD83D\uDCE4 Share Year in Review</button>`;
+      $('yir-content').innerHTML = rhtml;
+      // Share card
+      $('yir-share').addEventListener('click', () => {
+        const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1920;
+        const xc = cv.getContext('2d');
+        xc.fillStyle = '#121212'; xc.fillRect(0, 0, 1080, 1920);
+        // SBD bar
+        const grd = xc.createLinearGradient(0, 0, 1080, 0);
+        grd.addColorStop(0, COLORS.squat); grd.addColorStop(0.5, COLORS.bench); grd.addColorStop(1, COLORS.deadlift);
+        xc.fillStyle = grd; xc.fillRect(0, 0, 1080, 8);
+        xc.textAlign = 'center';
+        xc.font = 'bold 80px -apple-system, sans-serif'; xc.fillStyle = '#ffd700';
+        xc.fillText(year + ' IN REVIEW', 540, 200);
+        xc.font = 'bold 48px -apple-system, sans-serif'; xc.fillStyle = '#fff';
+        const stats = [`${fmtNum(totalSets)} sets`, `${fmtNum(displayWeight(totalVol))} ${unit} volume`, `${days} training days`, `${totalPRs} PRs`];
+        stats.forEach((s, i) => xc.fillText(s, 540, 400 + i * 100));
+        if (biggestPR) {
+          xc.font = 'bold 36px -apple-system, sans-serif'; xc.fillStyle = '#ffd700';
+          xc.fillText('Biggest PR', 540, 900);
+          xc.font = 'bold 56px -apple-system, sans-serif'; xc.fillStyle = COLORS[biggestPR.lift];
+          xc.fillText(`${LIFT_NAMES[biggestPR.lift]} ${formatWeight(biggestPR.e1rm)} ${unit}`, 540, 970);
+        }
+        xc.font = '28px -apple-system, sans-serif'; xc.fillStyle = '#666';
+        xc.fillText('1000 LB CLUB TRACKER', 540, 1820);
+        cv.toBlob(blob => {
+          if (navigator.share) navigator.share({ files: [new File([blob], `year-review-${year}.png`, { type: 'image/png' })] }).catch(()=>{});
+          else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `year-review-${year}.png`; a.click(); }
+        });
+      });
+    });
+
     // Data management in stats
     const expBtn = $('stats-export');
     if (expBtn) expBtn.addEventListener('click', exportData);
@@ -4252,20 +5127,46 @@
 
   // ===== THEME TOGGLE (F15) =====
   function applyTheme() {
+    if (autoTheme) {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(AUTO_THEME_KEY, autoTheme.toString());
     scheduleCloudSync();
     const btn = $('theme-btn');
-    btn.innerHTML = theme === 'dark' ? '&#9790;' : '&#9728;';
+    btn.innerHTML = autoTheme ? '\u2699\uFE0F' : (theme === 'dark' ? '&#9790;' : '&#9728;');
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = theme === 'dark' ? '#121212' : '#f5f5f5';
+    // Apply accent color
+    applyAccentColor();
   }
 
+  // Auto-theme system listener (#74)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (autoTheme) { applyTheme(); if (currentTab === 'charts') renderChart(); }
+  });
+
   $('theme-btn').addEventListener('click', () => {
+    autoTheme = false;
     theme = theme === 'dark' ? 'light' : 'dark';
     applyTheme();
     if (currentTab === 'charts') renderChart();
   });
+
+  // Accent Color (#75)
+  const ACCENT_COLORS = {
+    gold: '#ffd700', blue: '#1e88e5', red: '#e53935',
+    purple: '#ab47bc', green: '#43a047', orange: '#ff9800'
+  };
+  function applyAccentColor() {
+    const color = ACCENT_COLORS[accentColor] || ACCENT_COLORS.gold;
+    document.documentElement.style.setProperty('--gold', color);
+    document.documentElement.style.setProperty('--gold-bg', color.replace('#', 'rgba(') ? `${color}14` : 'rgba(255,215,0,0.08)');
+    // Proper rgba conversion
+    const r = parseInt(color.slice(1,3), 16), g = parseInt(color.slice(3,5), 16), b = parseInt(color.slice(5,7), 16);
+    document.documentElement.style.setProperty('--gold-bg', `rgba(${r},${g},${b},0.08)`);
+  }
 
   // ===== SETTINGS UPDATE =====
   // Add timer settings to settings modal
@@ -4319,6 +5220,16 @@
   applyTheme();
   document.querySelectorAll('.unit-btn').forEach(b => b.classList.toggle('active', b.dataset.unit === unit));
   document.querySelectorAll('.unit-label').forEach(el => el.textContent = unit);
+  // Initialize tag pills in log form
+  const logTagsEl = $('log-tags');
+  AVAILABLE_TAGS.forEach(tag => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.dataset.tag = tag;
+    pill.textContent = tag;
+    pill.addEventListener('click', () => pill.classList.toggle('active'));
+    logTagsEl.appendChild(pill);
+  });
   updateDashboard();
   renderCycleBar();
   // Update timer preset active state
@@ -4329,6 +5240,7 @@
   renderProgramSection();
   try { initPWA(); } catch {}
   try { checkAutoRecap(); } catch {}
+  try { checkComeback(); } catch {}
 
   // ===== FIREBASE AUTH & SYNC =====
   function updateSyncButton() {
@@ -4538,6 +5450,10 @@ service cloud.firestore {
       unit: localStorage.getItem(UNIT_KEY) || 'lbs',
       timer: timerDuration,
       theme,
+      badges: unlockedBadges,
+      dashboardWidgets,
+      accentColor,
+      challenges,
       schemaVersion: SCHEMA_VERSION
     };
   }
@@ -4633,6 +5549,33 @@ service cloud.firestore {
       if (cloudData.theme) {
         theme = cloudData.theme;
         applyTheme();
+      }
+
+      // Merge badges (union, keep earliest unlock date)
+      if (cloudData.badges) {
+        Object.entries(cloudData.badges).forEach(([id, data]) => {
+          if (!unlockedBadges[id] || (data.timestamp && data.timestamp < (unlockedBadges[id].timestamp || Infinity))) {
+            unlockedBadges[id] = data;
+          }
+        });
+        saveBadges();
+      }
+
+      // Dashboard widgets, accent, challenges: cloud wins
+      if (cloudData.dashboardWidgets) {
+        dashboardWidgets = { ...dashboardWidgets, ...cloudData.dashboardWidgets };
+        localStorage.setItem(DASH_WIDGETS_KEY, JSON.stringify(dashboardWidgets));
+      }
+      if (cloudData.accentColor) {
+        accentColor = cloudData.accentColor;
+        localStorage.setItem(ACCENT_KEY, accentColor);
+        applyAccentColor();
+      }
+      if (cloudData.challenges && Array.isArray(cloudData.challenges)) {
+        // Merge by created timestamp
+        const localMap = new Map(challenges.map(c => [c.created, c]));
+        cloudData.challenges.forEach(cc => { if (!localMap.has(cc.created)) challenges.push(cc); });
+        localStorage.setItem(CHALLENGES_KEY, JSON.stringify(challenges));
       }
 
       // Rebuild PRs from merged entries
