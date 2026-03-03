@@ -1223,7 +1223,9 @@
   const PROGRAM_TEMPLATES = {
     '5/3/1': {
       name: '5/3/1 Boring But Big',
+      description: 'Classic 4-week periodized program by Jim Wendler. Great for intermediate lifters wanting steady, long-term progress. Each cycle waves intensity across 5s, 3s, and 1s weeks with a deload, using AMRAP top sets to auto-regulate.',
       weeks: 4,
+      progression: { type: 'amrap', upperIncrement: 5, lowerIncrement: 10, cycleWeeks: 4, amrapWeek: 3, minReps: 1 },
       schedule: {
         1: { label: 'Week 1 (5s)', sets: [
           { pct: 65, reps: 5 }, { pct: 75, reps: 5 }, { pct: 85, reps: '5+' }
@@ -1241,7 +1243,9 @@
     },
     'nSuns': {
       name: 'nSuns LP',
+      description: 'High-volume linear progression based on 5/3/1. Ideal for early intermediates who can still add weight weekly. 9 sets per lift with heavy AMRAP top set followed by back-off volume.',
       weeks: 1,
+      progression: { type: 'amrap', upperIncrement: 5, lowerIncrement: 10, cycleWeeks: 1, amrapWeek: 1, minReps: 1 },
       schedule: {
         1: { label: 'nSuns T1', sets: [
           { pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: '1+' },
@@ -1252,7 +1256,9 @@
     },
     'GZCL': {
       name: 'GZCL Method',
+      description: 'Tiered approach by Cody Lefever. T1 heavy compounds build strength, T2 moderate volume builds muscle. Good for intermediates who want structured progression with built-in variety.',
       weeks: 4,
+      progression: { type: 'amrap', upperIncrement: 5, lowerIncrement: 10, cycleWeeks: 4, amrapWeek: 4, minReps: 1 },
       schedule: {
         1: { label: 'Week 1', sets: [
           { pct: 85, reps: 3, tier: 'T1' }, { pct: 85, reps: 3, tier: 'T1' }, { pct: 85, reps: 3, tier: 'T1' },
@@ -1273,6 +1279,43 @@
           { pct: 72.5, reps: 3, tier: 'T1' }, { pct: 82.5, reps: 2, tier: 'T1' }, { pct: 92.5, reps: '1+', tier: 'T1' },
           { pct: 72.5, reps: 3, tier: 'T1' },
           { pct: 60, reps: 10, tier: 'T2' }, { pct: 60, reps: 10, tier: 'T2' }, { pct: 60, reps: 10, tier: 'T2' }
+        ]}
+      }
+    },
+    'Texas': {
+      name: 'Texas Method',
+      description: 'Weekly periodization with volume, recovery, and intensity days. Best for late novices / early intermediates who need more than linear progression but less complexity than 5/3/1.',
+      weeks: 1,
+      progression: { type: 'intensity-pr', upperIncrement: 5, lowerIncrement: 5, cycleWeeks: 1, minReps: 5 },
+      schedule: {
+        1: { label: 'Texas Method', sets: [
+          { pct: 81, reps: 5, day: 'Volume' }, { pct: 81, reps: 5, day: 'Volume' }, { pct: 81, reps: 5, day: 'Volume' },
+          { pct: 81, reps: 5, day: 'Volume' }, { pct: 81, reps: 5, day: 'Volume' },
+          { pct: 65, reps: 5, day: 'Recovery' }, { pct: 65, reps: 5, day: 'Recovery' },
+          { pct: 100, reps: '5+', day: 'Intensity' }
+        ]}
+      }
+    },
+    'SL5x5': {
+      name: 'StrongLifts 5x5',
+      description: 'Simple beginner program — 5 sets of 5 reps at one working weight. Add weight every session when all sets are completed. Best for absolute beginners in their first 3-6 months of lifting.',
+      weeks: 1,
+      progression: { type: 'session', upperIncrement: 5, lowerIncrement: 10, cycleWeeks: 1 },
+      schedule: {
+        1: { label: 'StrongLifts 5x5', sets: [
+          { pct: 100, reps: 5 }, { pct: 100, reps: 5 }, { pct: 100, reps: 5 },
+          { pct: 100, reps: 5 }, { pct: 100, reps: 5 }
+        ]}
+      }
+    },
+    'SS': {
+      name: 'Starting Strength',
+      description: 'The original novice barbell program by Mark Rippetoe. 3 sets of 5 at one working weight with linear progression each session. Perfect for brand-new lifters building a strength foundation.',
+      weeks: 1,
+      progression: { type: 'session', upperIncrement: 5, lowerIncrement: 10, cycleWeeks: 1 },
+      schedule: {
+        1: { label: 'Starting Strength', sets: [
+          { pct: 100, reps: 5 }, { pct: 100, reps: 5 }, { pct: 100, reps: 5 }
         ]}
       }
     }
@@ -1332,7 +1375,7 @@
   let pendingSharePR = null;
   let undoStack = null;
   let undoTimer = null;
-  let programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {} };
+  let programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {}, amrapResults: {}, tmHistory: [], autoProgressEnabled: true };
 
   // ===== DOM REFS =====
   const $ = id => document.getElementById(id);
@@ -1704,10 +1747,163 @@
       if (stored) programConfig = JSON.parse(stored);
     } catch {}
     if (!programConfig.completedSets) programConfig.completedSets = {};
+    if (!programConfig.amrapResults) programConfig.amrapResults = {};
+    if (!programConfig.tmHistory) programConfig.tmHistory = [];
+    if (programConfig.autoProgressEnabled === undefined) programConfig.autoProgressEnabled = true;
   }
 
   function saveProgramConfig() {
     localStorage.setItem(PROGRAMS_KEY, JSON.stringify(programConfig));
+  }
+
+  // ===== AUTO-PROGRESSION =====
+  function checkAutoProgression(lift) {
+    if (!programConfig.autoProgressEnabled || !programConfig.activeProgram) return null;
+    const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+    if (!tmpl || !tmpl.progression) return null;
+    const prog = tmpl.progression;
+    const tm = programConfig.trainingMaxes[lift];
+    if (!tm) return null;
+    const increment = (lift === 'bench') ? prog.upperIncrement : prog.lowerIncrement;
+    const week = ((programConfig.currentWeek - 1) % tmpl.weeks) + 1;
+
+    if (prog.type === 'session') {
+      // SL5x5 / SS: all sets completed for this lift this week
+      const weekData = tmpl.schedule[week];
+      if (!weekData) return null;
+      const allDone = weekData.sets.every((_, i) =>
+        programConfig.completedSets[`${lift}-${programConfig.currentWeek}-${i}`]
+      );
+      if (!allDone) return null;
+      return { lift, oldTM: tm, newTM: tm + increment, reason: 'All sets completed' };
+    }
+
+    if (prog.type === 'amrap') {
+      // 5/3/1 / nSuns / GZCL: check if on the right week and AMRAP reps met
+      if (week !== prog.amrapWeek) return null;
+      const weekData = tmpl.schedule[week];
+      if (!weekData) return null;
+      // Find the AMRAP set(s) — reps contain '+'
+      const amrapIdxs = weekData.sets.map((s, i) => typeof s.reps === 'string' && s.reps.includes('+') ? i : -1).filter(i => i >= 0);
+      if (amrapIdxs.length === 0) return null;
+      // Check if any AMRAP result meets minimum
+      for (const idx of amrapIdxs) {
+        const key = `${lift}-${programConfig.currentWeek}-${idx}`;
+        const reps = programConfig.amrapResults[key];
+        if (reps !== undefined && reps >= prog.minReps) {
+          return { lift, oldTM: tm, newTM: tm + increment, reason: `AMRAP: ${reps} reps` };
+        }
+      }
+      return null;
+    }
+
+    if (prog.type === 'intensity-pr') {
+      // Texas Method: check intensity day AMRAP
+      const weekData = tmpl.schedule[week];
+      if (!weekData) return null;
+      const amrapIdx = weekData.sets.findIndex(s => typeof s.reps === 'string' && s.reps.includes('+') && s.day === 'Intensity');
+      if (amrapIdx < 0) return null;
+      const key = `${lift}-${programConfig.currentWeek}-${amrapIdx}`;
+      const reps = programConfig.amrapResults[key];
+      if (reps !== undefined && reps >= prog.minReps) {
+        return { lift, oldTM: tm, newTM: tm + increment, reason: `Intensity PR: ${reps} reps` };
+      }
+      return null;
+    }
+
+    return null;
+  }
+
+  function applyProgression(result) {
+    if (!result) return;
+    programConfig.trainingMaxes[result.lift] = result.newTM;
+    programConfig.tmHistory.push({
+      date: new Date().toISOString().split('T')[0],
+      lift: result.lift,
+      oldTM: result.oldTM,
+      newTM: result.newTM,
+      reason: result.reason
+    });
+    saveProgramConfig();
+    const name = LIFT_NAMES[result.lift];
+    showToast(`${name} TM: ${formatWeight(result.oldTM)} → ${formatWeight(result.newTM)} ${unit}`);
+  }
+
+  // ===== GOAL PROJECTIONS =====
+  function calcGoalProjection(lift) {
+    if (lift === 'total') return null;
+    const goal = goals[lift];
+    const cur = bestE1RM(lift);
+    if (!goal || !cur || cur >= goal) return null;
+    const gap = goal - cur;
+
+    // Program-based projection
+    if (programConfig.activeProgram) {
+      const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+      if (tmpl && tmpl.progression) {
+        const prog = tmpl.progression;
+        const increment = (lift === 'bench') ? prog.upperIncrement : prog.lowerIncrement;
+        const cycleWeeks = prog.cycleWeeks;
+        const cyclesNeeded = Math.ceil(gap / increment);
+        const weeksNeeded = cyclesNeeded * cycleWeeks;
+        const estDate = new Date();
+        estDate.setDate(estDate.getDate() + weeksNeeded * 7);
+        // Build per-cycle TM progression
+        const tmProgression = [];
+        let tmVal = programConfig.trainingMaxes[lift] || cur * 0.9;
+        for (let i = 0; i < Math.min(cyclesNeeded, 20); i++) {
+          tmVal += increment;
+          const d = new Date();
+          d.setDate(d.getDate() + (i + 1) * cycleWeeks * 7);
+          tmProgression.push({ tm: tmVal, date: d });
+        }
+        return { currentE1RM: cur, goal, gap, program: tmpl.name, weeksNeeded, estDate, tmProgression };
+      }
+    }
+
+    // Fallback: historical e1RM progression rate
+    const liftEntries = entries.filter(e => e.lift === lift).sort((a, b) => a.timestamp - b.timestamp);
+    if (liftEntries.length < 2) return null;
+    const first = liftEntries[0], last = liftEntries[liftEntries.length - 1];
+    const daySpan = (last.timestamp - first.timestamp) / 86400000;
+    if (daySpan < 14) return null;
+    const e1rmFirst = first.e1rm, e1rmLast = last.e1rm;
+    const ratePerWeek = (e1rmLast - e1rmFirst) / (daySpan / 7);
+    if (ratePerWeek <= 0) return null;
+    const weeksNeeded = Math.ceil(gap / ratePerWeek);
+    const estDate = new Date();
+    estDate.setDate(estDate.getDate() + weeksNeeded * 7);
+    return { currentE1RM: cur, goal, gap, program: null, weeksNeeded, estDate, ratePerWeek };
+  }
+
+  function calcMilestoneRoadmap(lift) {
+    const proj = calcGoalProjection(lift);
+    if (!proj) return null;
+    const cur = proj.currentE1RM;
+    const goal = proj.goal;
+    const gap = proj.gap;
+    const milestones = [];
+    // Break into 4 milestones
+    for (let i = 1; i <= 4; i++) {
+      let target;
+      if (i === 4) {
+        target = goal;
+      } else {
+        target = Math.round((cur + gap * (i / 4)) / 5) * 5;
+      }
+      const pctOfGap = (target - cur) / gap;
+      const weeksAway = Math.round(proj.weeksNeeded * pctOfGap);
+      const estDate = new Date();
+      estDate.setDate(estDate.getDate() + weeksAway * 7);
+      milestones.push({
+        target,
+        label: i === 4 ? 'Goal' : `Milestone ${i}`,
+        weeksAway,
+        estDate,
+        achieved: cur >= target
+      });
+    }
+    return { lift, milestones, projection: proj };
   }
 
   function roundToPlate(weight) {
@@ -1732,6 +1928,7 @@
         reps: s.reps,
         pct: s.pct,
         tier: s.tier || null,
+        day: s.day || null,
         completed: !!programConfig.completedSets[`${lift}-${programConfig.currentWeek}-${i}`]
       }))
     };
@@ -1762,13 +1959,19 @@
     }
     const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
     $('program-title').textContent = tmpl.name + ' \u2014 ' + LIFT_NAMES[currentLift];
-    $('program-week').textContent = workout.label;
+    // One-line description (first sentence)
+    const desc = tmpl.description || '';
+    const firstSentence = desc.split('.')[0];
+    $('program-week').innerHTML = workout.label + (firstSentence ? `<div style="font-size:0.65rem;color:var(--text-dim);font-weight:400;margin-top:2px">${firstSentence}.</div>` : '');
     const setsEl = $('program-sets');
     setsEl.innerHTML = workout.sets.map(s => {
       const tierLabel = s.tier ? `<span style="font-size:0.6rem;color:var(--text-dim);margin-right:4px">${s.tier}</span>` : '';
+      const dayLabel = s.day ? `<span style="font-size:0.55rem;color:var(--text-dim);margin-right:4px">${s.day}</span>` : '';
+      const isAmrap = typeof s.reps === 'string' && s.reps.includes('+');
+      const amrapBadge = isAmrap ? `<span style="font-size:0.55rem;color:var(--gold);font-weight:600;margin-left:4px">AMRAP</span>` : '';
       return `<div class="program-set-row${s.completed ? ' completed' : ''}" data-set-idx="${s.num - 1}">
         <span class="program-set-num">${s.num}</span>
-        ${tierLabel}<span class="program-set-weight">${formatWeight(s.weight)} ${unit} &times; ${s.reps}</span>
+        ${dayLabel}${tierLabel}<span class="program-set-weight">${formatWeight(s.weight)} ${unit} &times; ${s.reps}</span>${amrapBadge}
         <span class="program-set-pct">${s.pct}%</span>
       </div>`;
     }).join('');
@@ -1780,6 +1983,7 @@
         if (set.completed) {
           // Toggle off completed
           delete programConfig.completedSets[`${currentLift}-${programConfig.currentWeek}-${idx}`];
+          delete programConfig.amrapResults[`${currentLift}-${programConfig.currentWeek}-${idx}`];
         } else {
           // Auto-fill inputs
           const wDisplay = displayWeight(set.weight);
@@ -1789,6 +1993,17 @@
           updatePreview();
           // Mark completed
           programConfig.completedSets[`${currentLift}-${programConfig.currentWeek}-${idx}`] = true;
+          // Check session-type auto-progression (SL5x5 / SS)
+          const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+          if (tmpl && tmpl.progression && tmpl.progression.type === 'session') {
+            const result = checkAutoProgression(currentLift);
+            if (result) {
+              saveProgramConfig();
+              renderProgramSection();
+              setTimeout(() => applyProgression(result), 300);
+              return;
+            }
+          }
         }
         saveProgramConfig();
         renderProgramSection();
@@ -1801,12 +2016,16 @@
     const programs = Object.keys(PROGRAM_TEMPLATES);
     const current = programConfig.activeProgram || '';
 
-    let html = `<div class="input-group" style="margin-bottom:12px"><label>Program</label>
+    let html = `<div class="input-group" style="margin-bottom:8px"><label>Program</label>
       <select id="program-select" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem">
         <option value="">None (disable)</option>
         ${programs.map(p => `<option value="${p}"${p === current ? ' selected' : ''}>${PROGRAM_TEMPLATES[p].name}</option>`).join('')}
       </select>
     </div>`;
+
+    // Description area
+    const initDesc = current ? PROGRAM_TEMPLATES[current].description : '';
+    html += `<div id="program-desc" style="font-size:0.75rem;color:var(--text-dim);line-height:1.4;margin-bottom:12px;min-height:20px">${initDesc}</div>`;
 
     html += `<div style="font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;font-weight:600">Training Maxes</div>`;
     ['squat', 'bench', 'deadlift'].forEach(lift => {
@@ -1821,9 +2040,15 @@
       </div>`;
     });
 
-    html += `<div class="input-group" style="margin-top:12px;margin-bottom:12px"><label>Current Week</label>
+    html += `<div class="input-group" style="margin-top:12px;margin-bottom:8px"><label>Current Week</label>
       <input type="number" id="program-week-input" value="${programConfig.currentWeek || 1}" min="1" style="width:80px;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem;text-align:center;outline:none">
     </div>`;
+
+    // Auto-progression toggle
+    html += `<label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text);margin-bottom:12px;cursor:pointer">
+      <input type="checkbox" id="auto-progress-toggle" ${programConfig.autoProgressEnabled ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--green)">
+      Auto-progress TM when targets hit
+    </label>`;
 
     html += `<button class="modal-save-btn" id="program-save">Save Program</button>`;
 
@@ -1831,6 +2056,12 @@
     body.innerHTML = html;
     $('edit-modal').style.display = '';
     document.body.style.overflow = 'hidden';
+
+    // Update description on program change
+    $('program-select').addEventListener('change', () => {
+      const sel = $('program-select').value;
+      $('program-desc').textContent = sel ? (PROGRAM_TEMPLATES[sel].description || '') : '';
+    });
 
     // Suggest TM buttons
     body.querySelectorAll('[data-suggest]').forEach(btn => {
@@ -1850,6 +2081,7 @@
         if (v > 0) programConfig.trainingMaxes[lift] = inputToLbs(v);
       });
       programConfig.currentWeek = parseInt($('program-week-input').value) || 1;
+      programConfig.autoProgressEnabled = $('auto-progress-toggle').checked;
       programConfig.completedSets = {};
       saveProgramConfig();
       closeModal('edit-modal');
@@ -2337,13 +2569,39 @@
     rb.classList.add('visible');
     // Start rest timer (F13)
     startTimer(timerDuration);
+
+    // Auto-progression: detect AMRAP program set match
+    let progApplied = false;
+    if (programConfig.activeProgram && programConfig.autoProgressEnabled) {
+      const workout = getProgramWorkout(currentLift);
+      if (workout) {
+        const loggedWeight = inputToLbs(w);
+        workout.sets.forEach((s, idx) => {
+          if (typeof s.reps === 'string' && s.reps.includes('+') && Math.abs(s.weight - loggedWeight) <= 3) {
+            const key = `${currentLift}-${programConfig.currentWeek}-${idx}`;
+            if (!programConfig.amrapResults[key]) {
+              programConfig.amrapResults[key] = r;
+              programConfig.completedSets[key] = true;
+              saveProgramConfig();
+              renderProgramSection();
+              const result = checkAutoProgression(currentLift);
+              if (result) {
+                progApplied = true;
+                setTimeout(() => applyProgression(result), 300);
+              }
+            }
+          }
+        });
+      }
+    }
+
     if (isPR) {
       const name = LIFT_NAMES[currentLift];
       const shareData = { lift: currentLift, weight: entry.weight, e1rm: entry.e1rm, date: entry.date };
       showToast(`NEW PR! ${name} e1RM: ${formatWeight(entry.e1rm)} ${unit}`, true, milestone, shareData);
     } else if (isRepPR) {
       showToast(`${r}-Rep PR! ${LIFT_NAMES[currentLift]} ${w} ${unit}`);
-    } else {
+    } else if (!progApplied) {
       showToast('Set logged');
     }
     weightInput.focus();
@@ -2767,7 +3025,7 @@
       profile = { gender: null, bodyweight: null, bodyweightHistory: [] };
       goals = { squat: null, bench: null, deadlift: null, total: null };
       activeCycleId = null; lastLoggedSet = null;
-      programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {} };
+      programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {}, amrapResults: {}, tmHistory: [], autoProgressEnabled: true };
       closeModal('settings-modal');
       updateDashboard(); renderCycleBar(); renderProgramSection();
       $('repeat-btn').classList.remove('visible');
@@ -3401,10 +3659,52 @@
           <span class="goal-unit">${unit}</span>
         </div>
         ${goal ? `<div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${COLORS[lift]}"></div></div>
-        <div class="goal-pct">${Math.round(pct)}%</div>` : ''}
-      </div>`;
+        <div class="goal-pct">${Math.round(pct)}%</div>` : ''}`;
+      // Projection line
+      if (lift !== 'total' && goal && cur && cur < goal) {
+        const proj = calcGoalProjection(lift);
+        if (proj) {
+          const estLabel = proj.estDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          const via = proj.program || 'historical rate';
+          html += `<div style="font-size:0.65rem;color:var(--text-dim);margin-top:2px">Est. ${estLabel} via ${via} (~${proj.weeksNeeded} weeks)</div>`;
+        }
+      }
+      html += `</div>`;
     });
     html += `</div>`;
+
+    // 6b. Milestone Roadmap
+    const roadmapLifts = ['squat','bench','deadlift'].filter(lift => {
+      const cur = bestE1RM(lift);
+      const goal = goals[lift];
+      return goal && cur && cur < goal;
+    });
+    if (roadmapLifts.length > 0) {
+      html += `<div class="stats-section"><div class="stats-header">Milestone Roadmap</div>`;
+      roadmapLifts.forEach(lift => {
+        const rm = calcMilestoneRoadmap(lift);
+        if (!rm) return;
+        html += `<div style="margin-bottom:16px">
+          <div style="font-size:0.8rem;font-weight:600;color:${COLORS[lift]};margin-bottom:8px">${LIFT_NAMES[lift]}</div>
+          <div style="position:relative;padding-left:16px">`;
+        // Vertical line
+        html += `<div style="position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--border)"></div>`;
+        rm.milestones.forEach((ms, i) => {
+          const dotColor = ms.achieved ? COLORS[lift] : 'var(--border)';
+          const textColor = ms.achieved ? 'var(--text)' : 'var(--text-dim)';
+          const estLabel = ms.estDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          html += `<div style="position:relative;padding:4px 0 8px 12px;font-size:0.75rem;color:${textColor}">
+            <div style="position:absolute;left:-3px;top:7px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid var(--surface)"></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span><strong>${formatWeight(ms.target)} ${unit}</strong> <span style="font-size:0.65rem">${ms.label}</span></span>
+              <span style="font-size:0.65rem;color:var(--text-dim)">${ms.achieved ? 'Achieved' : estLabel + ' (~' + ms.weeksAway + 'w)'}</span>
+            </div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+    }
 
     // 7. Training Cycles (F4)
     html += `<div class="stats-section"><div class="stats-header">Training Cycles</div>`;
