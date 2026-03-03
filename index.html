@@ -1017,7 +1017,16 @@
     localStorage.removeItem(FIREBASE_CONFIG_KEY);
   }
 
-  // Initialize Firebase (only if config exists in localStorage)
+  // Default config (hardcoded — Firebase web configs are public; security is via Firestore rules)
+  const DEFAULT_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDpVCUuXRI_nM_ZpvqX-duP6nizFazGjx4",
+    authDomain: "lb-club-tracker.firebaseapp.com",
+    projectId: "lb-club-tracker",
+    storageBucket: "lb-club-tracker.firebasestorage.app",
+    messagingSenderId: "702922778039",
+    appId: "1:702922778039:web:86d265866c9b10763e7432"
+  };
+
   let firebaseApp = null, db = null, auth = null, authProvider = null;
   let firebaseReady = false;
 
@@ -1036,7 +1045,8 @@
     }
   }
 
-  initFirebase(loadFirebaseConfig());
+  // Use localStorage override if present, otherwise use hardcoded config
+  initFirebase(loadFirebaseConfig() || DEFAULT_FIREBASE_CONFIG);
 
   // ===== SYNC STATE =====
   let currentUser = null;
@@ -2977,12 +2987,6 @@
   function renderSyncMenu() {
     const menu = $('sync-menu');
     if (!menu) return;
-    if (!firebaseReady) {
-      menu.innerHTML = `
-        <div class="sync-menu-status">Sync your data across devices</div>
-        <button class="sync-menu-item" id="sync-setup-btn">Set up cloud sync</button>`;
-      return;
-    }
     if (currentUser) {
       menu.innerHTML = `
         <div class="sync-menu-status">Signed in as<br><strong>${currentUser.displayName || currentUser.email}</strong></div>
@@ -2992,8 +2996,7 @@
     } else {
       menu.innerHTML = `
         <div class="sync-menu-status">Sign in to sync across devices</div>
-        <button class="sync-menu-item" id="sync-signin-btn">Sign in with Google</button>
-        <button class="sync-menu-item" id="sync-disconnect-btn" style="color:var(--danger);font-size:0.7rem">Disconnect Firebase</button>`;
+        <button class="sync-menu-item" id="sync-signin-btn">Sign in with Google</button>`;
     }
   }
 
