@@ -1751,9 +1751,15 @@
     }
     $('program-prev').style.display = '';
     $('program-next').style.display = '';
-    const workout = getProgramWorkout(currentLift);
-    if (!workout) { el.style.display = 'none'; return; }
     el.style.display = 'block';
+    const workout = getProgramWorkout(currentLift);
+    if (!workout) {
+      const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+      $('program-title').textContent = tmpl ? tmpl.name : programConfig.activeProgram;
+      $('program-week').textContent = '';
+      $('program-sets').innerHTML = `<div style="text-align:center;padding:8px 0;font-size:0.8rem;color:var(--text-dim)">Set a training max for ${LIFT_NAMES[currentLift]} in Setup</div>`;
+      return;
+    }
     const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
     $('program-title').textContent = tmpl.name + ' \u2014 ' + LIFT_NAMES[currentLift];
     $('program-week').textContent = workout.label;
