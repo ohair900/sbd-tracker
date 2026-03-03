@@ -159,6 +159,51 @@
   .fatigue-text { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
   .fatigue-text strong { color: var(--text); }
 
+  /* Streak tracker */
+  .streak-bar {
+    display: flex; gap: 10px; margin-bottom: 8px; align-items: center;
+    background: var(--surface); border-radius: 8px; padding: 8px 12px;
+  }
+  .streak-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .streak-info { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
+  .streak-info strong { color: var(--text); }
+  .streak-detail { font-size: 0.65rem; color: var(--text-dim); }
+
+  /* Weekly recap card */
+  .recap-card {
+    background: var(--surface); border-radius: 8px; padding: 10px 12px;
+    margin-bottom: 8px; cursor: pointer; border: 1px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .recap-card:hover { border-color: #555; }
+  .recap-card-header { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-weight: 600; margin-bottom: 4px; }
+  .recap-card-preview { font-size: 0.8rem; color: var(--text); }
+  .recap-stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+  }
+  .recap-stat {
+    background: var(--surface2); border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .recap-stat-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+  .recap-stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .recap-stat-change { font-size: 0.65rem; font-weight: 600; }
+  .recap-stat-change.up { color: var(--green); }
+  .recap-stat-change.down { color: var(--red); }
+  .recap-lift-bar {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.75rem;
+  }
+  .recap-lift-label { min-width: 20px; font-weight: 700; font-size: 0.65rem; }
+  .recap-lift-fill { height: 14px; border-radius: 3px; min-width: 2px; }
+  .recap-lift-vol { color: var(--text-dim); font-size: 0.7rem; min-width: 50px; text-align: right; }
+  .recap-pr-item { font-size: 0.75rem; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .recap-pr-item:last-child { border-bottom: none; }
+  .recap-top-set {
+    background: var(--gold-bg); border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; text-align: center;
+  }
+  .recap-top-set-label { font-size: 0.65rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.04em; }
+  .recap-top-set-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+
   /* Cycle selector */
   .cycle-bar {
     display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;
@@ -217,6 +262,46 @@
   }
   .repeat-btn.visible { display: block; }
   .repeat-btn:hover { border-color: #555; color: var(--text); }
+
+  /* Program support */
+  .program-section {
+    background: var(--surface); border-radius: 10px; padding: 12px;
+    margin-top: 10px; margin-bottom: 10px;
+  }
+  .program-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .program-title { font-size: 0.75rem; font-weight: 700; color: var(--text); }
+  .program-week { font-size: 0.65rem; color: var(--text-dim); }
+  .program-set-row {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    border-radius: 6px; margin-bottom: 3px; cursor: pointer;
+    background: var(--surface2); transition: all 0.15s; font-size: 0.8rem;
+  }
+  .program-set-row:hover { background: var(--border); }
+  .program-set-row.completed { opacity: 0.4; text-decoration: line-through; }
+  .program-set-num { color: var(--text-dim); font-size: 0.65rem; min-width: 18px; }
+  .program-set-weight { font-weight: 700; color: var(--text); flex: 1; }
+  .program-set-pct { font-size: 0.65rem; color: var(--text-dim); }
+  .program-actions { display: flex; gap: 4px; margin-top: 8px; }
+  .program-nav-btn {
+    padding: 4px 10px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim);
+    font-size: 0.7rem; font-weight: 600; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .program-nav-btn:hover { border-color: #555; color: var(--text); }
+  .tm-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .tm-lift-label { font-weight: 700; font-size: 0.8rem; min-width: 70px; }
+  .tm-input {
+    width: 90px; padding: 8px; border: 2px solid var(--border);
+    border-radius: 8px; background: var(--surface); color: var(--text);
+    font-size: 0.9rem; text-align: center; outline: none;
+  }
+  .tm-input:focus { border-color: #555; }
 
   /* Session grouping */
   .session-card {
@@ -324,6 +409,13 @@
     font-weight: 600; cursor: pointer; transition: all 0.15s;
   }
   .toast-share:hover { background: rgba(255,255,255,0.1); }
+  .toast-undo {
+    display: inline-block; margin-top: 6px; margin-left: 4px; padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+    background: transparent; color: #fff; font-size: 0.7rem;
+    font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .toast-undo:hover { background: rgba(255,255,255,0.1); }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -660,6 +752,15 @@
   }
   .bw-log-btn:hover { opacity: 0.8; }
 
+  /* Weight class indicator */
+  .weight-class-card {
+    margin-top: 12px; padding: 10px 12px; background: var(--surface2);
+    border-radius: 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .weight-class-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  .weight-class-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .weight-class-detail { font-size: 0.7rem; color: var(--text-dim); }
+
   .score-cards { display: flex; gap: 12px; }
   .score-card {
     flex: 1; text-align: center; padding: 12px;
@@ -785,6 +886,10 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
+  /* Swipe animations */
+  @keyframes slideInLeft { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideInRight { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
   /* Save button inside modals */
   .modal-save-btn {
     width: 100%; padding: 14px; border: none; border-radius: 10px;
@@ -860,6 +965,11 @@
     <div class="fatigue-light" id="fatigue-light"></div>
     <div class="fatigue-text" id="fatigue-text"></div>
   </div>
+  <div class="streak-bar" id="streak-bar" style="display:none">
+    <span class="streak-icon" id="streak-icon"></span>
+    <div class="streak-info" id="streak-info"></div>
+  </div>
+  <div class="recap-card" id="recap-card" style="display:none" onclick=""></div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="log">Log</button>
@@ -908,6 +1018,18 @@
     <div class="e1rm-preview" id="e1rm-preview">Enter weight and reps</div>
     <button class="log-btn" id="log-btn" disabled>Log Set</button>
     <button class="repeat-btn" id="repeat-btn"></button>
+    <div class="program-section" id="program-section" style="display:none">
+      <div class="program-header">
+        <span class="program-title" id="program-title"></span>
+        <span class="program-week" id="program-week"></span>
+      </div>
+      <div id="program-sets"></div>
+      <div class="program-actions">
+        <button class="program-nav-btn" id="program-prev">&larr; Prev</button>
+        <button class="program-nav-btn" id="program-next">Next &rarr;</button>
+        <button class="program-nav-btn" id="program-setup" style="margin-left:auto">Setup</button>
+      </div>
+    </div>
     <div class="timer-container" id="timer-container">
       <div class="timer-top">
         <span class="timer-display" id="timer-display">3:00</span>
@@ -1089,6 +1211,73 @@
   const REP_RANGES = [1, 2, 3, 5, 8, 10];
   const CYCLE_TYPES = ['General', 'Hypertrophy', 'Strength', 'Peaking', 'Deload'];
 
+  // IPF weight classes (kg)
+  const IPF_CLASSES = {
+    male: [59, 66, 74, 83, 93, 105, 120],
+    female: [47, 52, 57, 63, 69, 76, 84]
+  };
+
+  // Program templates
+  const PROGRAMS_KEY = 'sbd-tracker-programs';
+  const RECAP_WEEK_KEY = 'sbd-tracker-recap-week';
+  const PROGRAM_TEMPLATES = {
+    '5/3/1': {
+      name: '5/3/1 Boring But Big',
+      weeks: 4,
+      schedule: {
+        1: { label: 'Week 1 (5s)', sets: [
+          { pct: 65, reps: 5 }, { pct: 75, reps: 5 }, { pct: 85, reps: '5+' }
+        ]},
+        2: { label: 'Week 2 (3s)', sets: [
+          { pct: 70, reps: 3 }, { pct: 80, reps: 3 }, { pct: 90, reps: '3+' }
+        ]},
+        3: { label: 'Week 3 (1s)', sets: [
+          { pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: '1+' }
+        ]},
+        4: { label: 'Week 4 (Deload)', sets: [
+          { pct: 40, reps: 5 }, { pct: 50, reps: 5 }, { pct: 60, reps: 5 }
+        ]}
+      }
+    },
+    'nSuns': {
+      name: 'nSuns LP',
+      weeks: 1,
+      schedule: {
+        1: { label: 'nSuns T1', sets: [
+          { pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: '1+' },
+          { pct: 90, reps: 3 }, { pct: 85, reps: 3 }, { pct: 80, reps: 3 },
+          { pct: 75, reps: 5 }, { pct: 70, reps: 5 }, { pct: 65, reps: '5+' }
+        ]}
+      }
+    },
+    'GZCL': {
+      name: 'GZCL Method',
+      weeks: 4,
+      schedule: {
+        1: { label: 'Week 1', sets: [
+          { pct: 85, reps: 3, tier: 'T1' }, { pct: 85, reps: 3, tier: 'T1' }, { pct: 85, reps: 3, tier: 'T1' },
+          { pct: 85, reps: 3, tier: 'T1' }, { pct: 85, reps: 3, tier: 'T1' },
+          { pct: 65, reps: 10, tier: 'T2' }, { pct: 65, reps: 10, tier: 'T2' }, { pct: 65, reps: 10, tier: 'T2' }
+        ]},
+        2: { label: 'Week 2', sets: [
+          { pct: 87.5, reps: 2, tier: 'T1' }, { pct: 87.5, reps: 2, tier: 'T1' }, { pct: 87.5, reps: 2, tier: 'T1' },
+          { pct: 87.5, reps: 2, tier: 'T1' }, { pct: 87.5, reps: 2, tier: 'T1' },
+          { pct: 67.5, reps: 8, tier: 'T2' }, { pct: 67.5, reps: 8, tier: 'T2' }, { pct: 67.5, reps: 8, tier: 'T2' }
+        ]},
+        3: { label: 'Week 3', sets: [
+          { pct: 90, reps: 2, tier: 'T1' }, { pct: 90, reps: 2, tier: 'T1' }, { pct: 90, reps: 2, tier: 'T1' },
+          { pct: 90, reps: '1+', tier: 'T1' },
+          { pct: 70, reps: 6, tier: 'T2' }, { pct: 70, reps: 6, tier: 'T2' }, { pct: 70, reps: 6, tier: 'T2' }
+        ]},
+        4: { label: 'Week 4 (Test)', sets: [
+          { pct: 72.5, reps: 3, tier: 'T1' }, { pct: 82.5, reps: 2, tier: 'T1' }, { pct: 92.5, reps: '1+', tier: 'T1' },
+          { pct: 72.5, reps: 3, tier: 'T1' },
+          { pct: 60, reps: 10, tier: 'T2' }, { pct: 60, reps: 10, tier: 'T2' }, { pct: 60, reps: 10, tier: 'T2' }
+        ]}
+      }
+    }
+  };
+
   // Strength standards: BW multipliers for each classification
   const STRENGTH_STANDARDS = {
     male: {
@@ -1141,6 +1330,9 @@
   let activeCycleId = null;
   let volPeriod = 'weekly';
   let pendingSharePR = null;
+  let undoStack = null;
+  let undoTimer = null;
+  let programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {} };
 
   // ===== DOM REFS =====
   const $ = id => document.getElementById(id);
@@ -1163,6 +1355,7 @@
     try { cycles = JSON.parse(localStorage.getItem(CYCLES_KEY)) || []; } catch { cycles = []; }
     if (!profile.bodyweightHistory) profile.bodyweightHistory = [];
     activeCycleId = (cycles.find(c => c.active) || {}).id || null;
+    loadProgramConfig();
 
     const version = parseInt(localStorage.getItem(VERSION_KEY)) || 0;
     if (version < CURRENT_VERSION) migrate(version);
@@ -1188,6 +1381,7 @@
     localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
     localStorage.setItem(PRS_KEY, JSON.stringify(prs));
     localStorage.setItem(CYCLES_KEY, JSON.stringify(cycles));
+    saveProgramConfig();
   }
   function saveEntries() { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
   function saveProfile() { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
@@ -1258,6 +1452,23 @@
     return levels[minIdx];
   }
 
+  function getWeightClass() {
+    if (!profile.gender || !profile.bodyweight) return null;
+    const bwKg = Math.round(lbsToKg(profile.bodyweight) * 10) / 10;
+    const classes = IPF_CLASSES[profile.gender];
+    if (!classes) return null;
+    const maxClass = classes[classes.length - 1];
+    if (bwKg > maxClass) {
+      return { className: maxClass + '+', limit: null, distToLimit: null, bwKg, isPlus: true };
+    }
+    for (const limit of classes) {
+      if (bwKg <= limit) {
+        return { className: limit + ' kg', limit, distToLimit: Math.round((limit - bwKg) * 10) / 10, bwKg, isPlus: false };
+      }
+    }
+    return null;
+  }
+
   // ===== REP PR TRACKING (F7) =====
   function getRepPRs() {
     const repBest = { squat: {}, bench: {}, deadlift: {} };
@@ -1305,6 +1516,329 @@
     }
 
     return { acwr, avgRPE7, avgRPE28, status, label };
+  }
+
+  // ===== STREAK TRACKER =====
+  function calcStreak() {
+    if (entries.length === 0) return null;
+    const dates = [...new Set(entries.map(e => e.date))].sort().reverse();
+    if (dates.length === 0) return null;
+    const dayDiff = (a, b) => Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 86400000);
+    const today = new Date().toISOString().split('T')[0];
+
+    // Current streak
+    let current = 0;
+    if (dayDiff(today, dates[0]) <= 2) {
+      current = 1;
+      for (let i = 1; i < dates.length; i++) {
+        if (dayDiff(dates[i - 1], dates[i]) <= 2) current++;
+        else break;
+      }
+    }
+
+    // Longest streak
+    let longest = 1, streak = 1;
+    for (let i = 1; i < dates.length; i++) {
+      if (dayDiff(dates[i - 1], dates[i]) <= 2) { streak++; longest = Math.max(longest, streak); }
+      else streak = 1;
+    }
+    longest = Math.max(longest, streak);
+
+    // Weeks active in last 4 weeks
+    const fourWeeksAgo = Date.now() - 28 * 86400000;
+    const recentDates = dates.filter(d => new Date(d + 'T12:00:00').getTime() >= fourWeeksAgo);
+    const weeks = new Set(recentDates.map(d => getWeekKey(d)));
+
+    return { current, longest, weeksActive: weeks.size };
+  }
+
+  function updateStreakBar() {
+    const el = $('streak-bar');
+    const streak = calcStreak();
+    if (!streak || streak.current === 0 && streak.longest <= 1) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    const icon = streak.current >= 7 ? '\uD83D\uDD25' : streak.current >= 3 ? '\u26A1' : '\uD83C\uDFCB\uFE0F';
+    $('streak-icon').textContent = icon;
+    let html = `<strong>${streak.current} day${streak.current !== 1 ? 's' : ''} streak</strong>`;
+    html += ` <span class="streak-detail">&middot; Best: ${streak.longest}d &middot; ${streak.weeksActive}/4 weeks active</span>`;
+    $('streak-info').innerHTML = html;
+  }
+
+  // ===== WEEKLY RECAP =====
+  function calcWeeklyRecap() {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const day = 86400000;
+    const startOfWeek = new Date(now.getTime() - ((now.getDay() + 6) % 7) * day);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfLastWeek = new Date(startOfWeek.getTime() - 7 * day);
+    const thisWeekStart = startOfWeek.toISOString().split('T')[0];
+    const lastWeekStart = startOfLastWeek.toISOString().split('T')[0];
+
+    const thisWeek = entries.filter(e => e.date >= thisWeekStart);
+    const lastWeek = entries.filter(e => e.date >= lastWeekStart && e.date < thisWeekStart);
+
+    if (thisWeek.length === 0 && lastWeek.length === 0) return null;
+
+    const sets = thisWeek.length;
+    const reps = thisWeek.reduce((s, e) => s + e.reps, 0);
+    const volume = thisWeek.reduce((s, e) => s + e.weight * e.reps, 0);
+    const prevSets = lastWeek.length;
+    const prevVolume = lastWeek.reduce((s, e) => s + e.weight * e.reps, 0);
+    const trainingDays = new Set(thisWeek.map(e => e.date)).size;
+    const prsThisWeek = thisWeek.filter(e => e.isPR);
+
+    // Top set (highest e1RM this week)
+    let topSet = null;
+    if (thisWeek.length > 0) {
+      topSet = thisWeek.reduce((best, e) => e.e1rm > (best?.e1rm || 0) ? e : best, null);
+    }
+
+    // Per-lift volume
+    const liftVolume = {};
+    ['squat', 'bench', 'deadlift'].forEach(l => {
+      liftVolume[l] = thisWeek.filter(e => e.lift === l).reduce((s, e) => s + e.weight * e.reps, 0);
+    });
+
+    const setsChange = prevSets > 0 ? ((sets - prevSets) / prevSets * 100) : null;
+    const volChange = prevVolume > 0 ? ((volume - prevVolume) / prevVolume * 100) : null;
+
+    const fatigue = calcFatigue();
+    const streak = calcStreak();
+
+    return { sets, reps, volume, prevSets, prevVolume, setsChange, volChange,
+      trainingDays, prsThisWeek, topSet, liftVolume, fatigue, streak, weekLabel: thisWeekStart };
+  }
+
+  function renderRecapCard() {
+    const el = $('recap-card');
+    const recap = calcWeeklyRecap();
+    if (!recap || (recap.sets === 0 && recap.prevSets === 0)) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    let preview = `${recap.sets} sets &middot; ${fmtNum(displayWeight(recap.volume))} ${unit} vol`;
+    if (recap.prsThisWeek.length > 0) preview += ` &middot; ${recap.prsThisWeek.length} PR${recap.prsThisWeek.length > 1 ? 's' : ''}`;
+    el.innerHTML = `<div class="recap-card-header">This Week</div><div class="recap-card-preview">${preview}</div>`;
+    el.onclick = () => showRecapModal(recap);
+  }
+
+  function showRecapModal(recap) {
+    const body = $('edit-body');
+    let html = '';
+
+    // Top set
+    if (recap.topSet) {
+      html += `<div class="recap-top-set">
+        <div class="recap-top-set-label">Top Set</div>
+        <div class="recap-top-set-value">${LIFT_NAMES[recap.topSet.lift]} ${formatWeight(recap.topSet.weight)} ${unit} &times; ${recap.topSet.reps}
+          <span style="color:var(--text-dim);font-size:0.8rem">= ${formatWeight(recap.topSet.e1rm)} e1RM</span></div>
+      </div>`;
+    }
+
+    // Stat grid
+    const volChangeStr = recap.volChange !== null ? `<div class="recap-stat-change ${recap.volChange >= 0 ? 'up' : 'down'}">${recap.volChange >= 0 ? '\u2191' : '\u2193'}${Math.abs(recap.volChange).toFixed(0)}%</div>` : '';
+    const setsChangeStr = recap.setsChange !== null ? `<div class="recap-stat-change ${recap.setsChange >= 0 ? 'up' : 'down'}">${recap.setsChange >= 0 ? '\u2191' : '\u2193'}${Math.abs(recap.setsChange).toFixed(0)}%</div>` : '';
+    html += `<div class="recap-stat-grid">
+      <div class="recap-stat"><div class="recap-stat-label">Sets</div><div class="recap-stat-value">${recap.sets}</div>${setsChangeStr}</div>
+      <div class="recap-stat"><div class="recap-stat-label">Volume</div><div class="recap-stat-value">${fmtNum(displayWeight(recap.volume))}</div>${volChangeStr}</div>
+      <div class="recap-stat"><div class="recap-stat-label">Training Days</div><div class="recap-stat-value">${recap.trainingDays}</div></div>
+      <div class="recap-stat"><div class="recap-stat-label">Fatigue (ACWR)</div><div class="recap-stat-value">${recap.fatigue?.acwr ? recap.fatigue.acwr.toFixed(2) : '\u2014'}</div></div>
+    </div>`;
+
+    // Per-lift volume bars
+    const maxLiftVol = Math.max(...Object.values(recap.liftVolume), 1);
+    html += `<div style="margin-bottom:12px"><div style="font-size:0.7rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-bottom:6px">Volume by Lift</div>`;
+    ['squat', 'bench', 'deadlift'].forEach(l => {
+      const vol = recap.liftVolume[l];
+      const pct = maxLiftVol > 0 ? (vol / maxLiftVol * 100) : 0;
+      html += `<div class="recap-lift-bar">
+        <span class="recap-lift-label" style="color:${COLORS[l]}">${LIFT_SHORT[l]}</span>
+        <div style="flex:1;background:var(--surface2);border-radius:3px;overflow:hidden;height:14px">
+          <div class="recap-lift-fill" style="width:${pct}%;background:${COLORS[l]};height:100%"></div>
+        </div>
+        <span class="recap-lift-vol">${fmtNum(displayWeight(vol))}</span>
+      </div>`;
+    });
+    html += '</div>';
+
+    // PRs
+    if (recap.prsThisWeek.length > 0) {
+      html += `<div style="margin-bottom:12px"><div style="font-size:0.7rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-bottom:6px">PRs This Week</div>`;
+      recap.prsThisWeek.forEach(e => {
+        html += `<div class="recap-pr-item"><span style="color:${COLORS[e.lift]}">${LIFT_NAMES[e.lift]}</span> ${formatWeight(e.weight)} ${unit} &times; ${e.reps} = ${formatWeight(e.e1rm)} e1RM</div>`;
+      });
+      html += '</div>';
+    }
+
+    // Streak
+    if (recap.streak && recap.streak.current > 0) {
+      html += `<div style="font-size:0.8rem;color:var(--text-dim);padding:8px 0;border-top:1px solid var(--border)">
+        ${recap.streak.current >= 7 ? '\uD83D\uDD25' : recap.streak.current >= 3 ? '\u26A1' : '\uD83C\uDFCB\uFE0F'}
+        <strong style="color:var(--text)">${recap.streak.current} day streak</strong> &middot; Best: ${recap.streak.longest}d &middot; ${recap.streak.weeksActive}/4 weeks active
+      </div>`;
+    }
+
+    $('edit-modal').querySelector('h3').textContent = 'Weekly Recap';
+    body.innerHTML = html;
+    $('edit-modal').style.display = '';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function checkAutoRecap() {
+    const now = new Date();
+    const startOfWeek = new Date(now.getTime() - ((now.getDay() + 6) % 7) * 86400000);
+    const weekKey = startOfWeek.toISOString().split('T')[0];
+    const lastShown = localStorage.getItem(RECAP_WEEK_KEY);
+    if (lastShown === weekKey) return;
+    // Only auto-show if it's a new week and we have last week data
+    const recap = calcWeeklyRecap();
+    if (recap && recap.prevSets > 0 && now.getDay() <= 1) {
+      localStorage.setItem(RECAP_WEEK_KEY, weekKey);
+      showRecapModal(recap);
+    }
+  }
+
+  // ===== PROGRAM SUPPORT =====
+  function loadProgramConfig() {
+    try {
+      const stored = localStorage.getItem(PROGRAMS_KEY);
+      if (stored) programConfig = JSON.parse(stored);
+    } catch {}
+    if (!programConfig.completedSets) programConfig.completedSets = {};
+  }
+
+  function saveProgramConfig() {
+    localStorage.setItem(PROGRAMS_KEY, JSON.stringify(programConfig));
+  }
+
+  function roundToPlate(weight) {
+    const increment = unit === 'kg' ? 2.5 : 5;
+    return Math.round(weight / increment) * increment;
+  }
+
+  function getProgramWorkout(lift) {
+    if (!programConfig.activeProgram) return null;
+    const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+    if (!tmpl) return null;
+    const tm = programConfig.trainingMaxes[lift];
+    if (!tm) return null;
+    const week = ((programConfig.currentWeek - 1) % tmpl.weeks) + 1;
+    const weekData = tmpl.schedule[week];
+    if (!weekData) return null;
+    return {
+      label: weekData.label,
+      sets: weekData.sets.map((s, i) => ({
+        num: i + 1,
+        weight: roundToPlate(tm * s.pct / 100),
+        reps: s.reps,
+        pct: s.pct,
+        tier: s.tier || null,
+        completed: !!programConfig.completedSets[`${lift}-${programConfig.currentWeek}-${i}`]
+      }))
+    };
+  }
+
+  function renderProgramSection() {
+    const el = $('program-section');
+    if (!programConfig.activeProgram) { el.style.display = 'none'; return; }
+    const workout = getProgramWorkout(currentLift);
+    if (!workout) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+    $('program-title').textContent = tmpl.name + ' \u2014 ' + LIFT_NAMES[currentLift];
+    $('program-week').textContent = workout.label;
+    const setsEl = $('program-sets');
+    setsEl.innerHTML = workout.sets.map(s => {
+      const tierLabel = s.tier ? `<span style="font-size:0.6rem;color:var(--text-dim);margin-right:4px">${s.tier}</span>` : '';
+      return `<div class="program-set-row${s.completed ? ' completed' : ''}" data-set-idx="${s.num - 1}">
+        <span class="program-set-num">${s.num}</span>
+        ${tierLabel}<span class="program-set-weight">${formatWeight(s.weight)} ${unit} &times; ${s.reps}</span>
+        <span class="program-set-pct">${s.pct}%</span>
+      </div>`;
+    }).join('');
+    // Click to auto-fill
+    setsEl.querySelectorAll('.program-set-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const idx = parseInt(row.dataset.setIdx);
+        const set = workout.sets[idx];
+        if (set.completed) {
+          // Toggle off completed
+          delete programConfig.completedSets[`${currentLift}-${programConfig.currentWeek}-${idx}`];
+        } else {
+          // Auto-fill inputs
+          const wDisplay = displayWeight(set.weight);
+          weightInput.value = wDisplay;
+          const repVal = typeof set.reps === 'string' ? parseInt(set.reps) : set.reps;
+          repsInput.value = repVal;
+          updatePreview();
+          // Mark completed
+          programConfig.completedSets[`${currentLift}-${programConfig.currentWeek}-${idx}`] = true;
+        }
+        saveProgramConfig();
+        renderProgramSection();
+      });
+    });
+  }
+
+  function showProgramSetupModal() {
+    const body = $('edit-body');
+    const programs = Object.keys(PROGRAM_TEMPLATES);
+    const current = programConfig.activeProgram || '';
+
+    let html = `<div class="input-group" style="margin-bottom:12px"><label>Program</label>
+      <select id="program-select" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem">
+        <option value="">None (disable)</option>
+        ${programs.map(p => `<option value="${p}"${p === current ? ' selected' : ''}>${PROGRAM_TEMPLATES[p].name}</option>`).join('')}
+      </select>
+    </div>`;
+
+    html += `<div style="font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;font-weight:600">Training Maxes</div>`;
+    ['squat', 'bench', 'deadlift'].forEach(lift => {
+      const best = bestE1RM(lift);
+      const suggestedTM = best ? Math.round(best * 0.9) : '';
+      const currentTM = programConfig.trainingMaxes[lift] || '';
+      html += `<div class="tm-row">
+        <span class="tm-lift-label" style="color:${COLORS[lift]}">${LIFT_NAMES[lift]}</span>
+        <input type="number" class="tm-input" id="tm-${lift}" value="${currentTM ? displayWeight(currentTM) : ''}" placeholder="${suggestedTM ? displayWeight(suggestedTM) : '0'}" inputmode="decimal" step="any">
+        <span style="font-size:0.7rem;color:var(--text-dim)">${unit}</span>
+        ${best ? `<button class="program-nav-btn" data-suggest="${lift}" style="font-size:0.6rem">90% e1RM</button>` : ''}
+      </div>`;
+    });
+
+    html += `<div class="input-group" style="margin-top:12px;margin-bottom:12px"><label>Current Week</label>
+      <input type="number" id="program-week-input" value="${programConfig.currentWeek || 1}" min="1" style="width:80px;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:0.9rem;text-align:center;outline:none">
+    </div>`;
+
+    html += `<button class="modal-save-btn" id="program-save">Save Program</button>`;
+
+    $('edit-modal').querySelector('h3').textContent = 'Program Setup';
+    body.innerHTML = html;
+    $('edit-modal').style.display = '';
+    document.body.style.overflow = 'hidden';
+
+    // Suggest TM buttons
+    body.querySelectorAll('[data-suggest]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lift = btn.dataset.suggest;
+        const best = bestE1RM(lift);
+        if (best) $('tm-' + lift).value = displayWeight(Math.round(best * 0.9));
+      });
+    });
+
+    // Save
+    $('program-save').addEventListener('click', () => {
+      const sel = $('program-select').value;
+      programConfig.activeProgram = sel || null;
+      ['squat', 'bench', 'deadlift'].forEach(lift => {
+        const v = parseFloat($('tm-' + lift).value);
+        if (v > 0) programConfig.trainingMaxes[lift] = inputToLbs(v);
+      });
+      programConfig.currentWeek = parseInt($('program-week-input').value) || 1;
+      programConfig.completedSets = {};
+      saveProgramConfig();
+      closeModal('edit-modal');
+      renderProgramSection();
+      showToast(sel ? `Program set: ${PROGRAM_TEMPLATES[sel].name}` : 'Program disabled');
+    });
   }
 
   // ===== VOLUME SUMMARIES (F5) =====
@@ -1565,6 +2099,7 @@
   function editEntry(id, lift, weight, reps, rpe, notes) {
     const e = entries.find(x => x.id === id);
     if (!e) return;
+    pushUndo('edit', { id, previous: { ...e } });
     e.lift = lift; e.weight = weight; e.reps = reps;
     e.e1rm = Math.round(calcE1RM(weight, reps) * 10) / 10;
     e.rpe = rpe; e.notes = notes || '';
@@ -1572,7 +2107,9 @@
   }
 
   function deleteEntry(id) {
-    const wasPR = entries.find(e => e.id === id)?.isPR;
+    const entry = entries.find(e => e.id === id);
+    if (entry) pushUndo('delete', { entry: { ...entry } });
+    const wasPR = entry?.isPR;
     entries = entries.filter(e => e.id !== id);
     if (wasPR) rebuildPRs(); else saveEntries();
   }
@@ -1600,6 +2137,48 @@
       });
     }
     setTimeout(() => el.classList.remove('show'), isPR ? 3500 : 1500);
+  }
+
+  // ===== UNDO =====
+  function pushUndo(type, data) {
+    clearTimeout(undoTimer);
+    undoStack = { type, data };
+    undoTimer = setTimeout(() => { undoStack = null; }, 10000);
+  }
+
+  function executeUndo() {
+    if (!undoStack) return;
+    clearTimeout(undoTimer);
+    const { type, data } = undoStack;
+    undoStack = null;
+    // Hide current toast
+    $('toast').classList.remove('show');
+    if (type === 'delete') {
+      entries.push(data.entry);
+      rebuildPRs();
+    } else if (type === 'edit') {
+      const e = entries.find(x => x.id === data.id);
+      if (e) { Object.assign(e, data.previous); rebuildPRs(); }
+    } else if (type === 'add') {
+      entries = entries.filter(e => e.id !== data.id);
+      rebuildPRs();
+    }
+    updateDashboard();
+    if (currentTab === 'history') renderHistory();
+    if (currentTab === 'charts') renderChart();
+    showToast('Undone');
+  }
+
+  function showToastWithUndo(msg, duration) {
+    const el = $('toast');
+    el.className = 'toast';
+    el.innerHTML = msg + ' <button class="toast-undo" id="toast-undo-btn">Undo</button>';
+    el.classList.add('show');
+    setTimeout(() => {
+      const btn = $('toast-undo-btn');
+      if (btn) btn.addEventListener('click', executeUndo);
+    }, 0);
+    setTimeout(() => el.classList.remove('show'), duration || 4000);
   }
 
   // ===== DASHBOARD =====
@@ -1659,6 +2238,8 @@
     updateStrengthRatios();
     updateScoreLine();
     updateFatigueBar();
+    updateStreakBar();
+    renderRecapCard();
   }
 
   // F1: Strength Ratios
@@ -1758,6 +2339,7 @@
       btn.classList.add('active');
       currentLift = btn.dataset.lift;
       updatePreview();
+      renderProgramSection();
     });
   });
 
@@ -1810,6 +2392,26 @@
   $('timer-skip').addEventListener('click', dismissTimer);
   $('timer-restart').addEventListener('click', () => startTimer(timerDuration));
 
+  // Program controls
+  $('program-prev').addEventListener('click', () => {
+    if (programConfig.currentWeek > 1) {
+      programConfig.currentWeek--;
+      programConfig.completedSets = {};
+      saveProgramConfig();
+      renderProgramSection();
+    }
+  });
+  $('program-next').addEventListener('click', () => {
+    const tmpl = PROGRAM_TEMPLATES[programConfig.activeProgram];
+    if (tmpl) {
+      programConfig.currentWeek++;
+      programConfig.completedSets = {};
+      saveProgramConfig();
+      renderProgramSection();
+    }
+  });
+  $('program-setup').addEventListener('click', showProgramSetupModal);
+
   // Cycle bar (F4)
   function renderCycleBar() {
     const bar = $('cycle-bar');
@@ -1861,18 +2463,50 @@
   }
 
   // ===== TABS =====
+  const TAB_ORDER = ['log', 'history', 'charts', 'stats'];
+
+  function switchToTab(tabName, direction) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const newPanel = $('tab-' + tabName);
+    if (direction) {
+      newPanel.style.animation = direction === 'left' ? 'slideInLeft 0.2s ease' : 'slideInRight 0.2s ease';
+      setTimeout(() => { newPanel.style.animation = ''; }, 200);
+    }
+    newPanel.classList.add('active');
+    currentTab = tabName;
+    if (currentTab === 'history') renderHistory();
+    if (currentTab === 'charts') renderChart();
+    if (currentTab === 'stats') renderStats();
+    if (currentTab === 'log') renderProgramSection();
+  }
+
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      $('tab-' + btn.dataset.tab).classList.add('active');
-      currentTab = btn.dataset.tab;
-      if (currentTab === 'history') renderHistory();
-      if (currentTab === 'charts') renderChart();
-      if (currentTab === 'stats') renderStats();
-    });
+    btn.addEventListener('click', () => switchToTab(btn.dataset.tab));
   });
+
+  // Touch swipe between tabs
+  (function() {
+    let startX = null, startY = null, startTime = 0;
+    document.addEventListener('touchstart', e => {
+      if (e.target.closest('.chart-container') || e.target.closest('.modal-backdrop') || e.target.closest('input') || e.target.closest('textarea')) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+      if (startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      const elapsed = Date.now() - startTime;
+      startX = null;
+      if (Math.abs(dx) > 50 && elapsed < 300 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        const idx = TAB_ORDER.indexOf(currentTab);
+        if (dx < 0 && idx < TAB_ORDER.length - 1) switchToTab(TAB_ORDER[idx + 1], 'left');
+        else if (dx > 0 && idx > 0) switchToTab(TAB_ORDER[idx - 1], 'right');
+      }
+    }, { passive: true });
+  })();
 
   // ===== UNIT TOGGLE =====
   document.querySelectorAll('.unit-btn').forEach(btn => {
@@ -1991,7 +2625,7 @@
         deleteEntry(id);
         deleteConfirmId = null;
         updateDashboard(); renderHistory();
-        showToast('Entry deleted');
+        showToastWithUndo('Entry deleted');
       } else {
         deleteConfirmId = id;
         renderHistory();
@@ -2068,7 +2702,7 @@
       editEntry(editingEntryId, lift, inputToLbs(w), r, rpe, notes);
       closeModal('edit-modal');
       updateDashboard(); renderHistory();
-      showToast('Entry updated');
+      showToastWithUndo('Entry updated');
     });
   }
 
@@ -2110,12 +2744,15 @@
       localStorage.removeItem(PRS_KEY);
       localStorage.removeItem(VERSION_KEY);
       localStorage.removeItem(CYCLES_KEY);
+      localStorage.removeItem(PROGRAMS_KEY);
+      localStorage.removeItem(RECAP_WEEK_KEY);
       entries = []; prs = []; cycles = [];
       profile = { gender: null, bodyweight: null, bodyweightHistory: [] };
       goals = { squat: null, bench: null, deadlift: null, total: null };
       activeCycleId = null; lastLoggedSet = null;
+      programConfig = { activeProgram: null, trainingMaxes: {}, currentWeek: 1, completedSets: {} };
       closeModal('settings-modal');
-      updateDashboard(); renderCycleBar();
+      updateDashboard(); renderCycleBar(); renderProgramSection();
       $('repeat-btn').classList.remove('visible');
       dismissTimer();
       showToast('All data cleared');
@@ -2127,6 +2764,7 @@
     const data = {
       version: CURRENT_VERSION,
       entries, profile, goals, prs, cycles,
+      programs: programConfig,
       unit: localStorage.getItem(UNIT_KEY) || 'lbs',
       theme
     };
@@ -2153,6 +2791,7 @@
         if (data.goals) goals = data.goals;
         if (data.prs) prs = data.prs;
         if (data.cycles) cycles = data.cycles;
+        if (data.programs) { programConfig = data.programs; saveProgramConfig(); }
         if (data.unit) { unit = data.unit; localStorage.setItem(UNIT_KEY, unit); }
         if (data.theme) { theme = data.theme; applyTheme(); }
         if (!profile.bodyweightHistory) profile.bodyweightHistory = [];
@@ -2162,7 +2801,7 @@
         // Re-init UI
         document.querySelectorAll('.unit-btn').forEach(b => b.classList.toggle('active', b.dataset.unit === unit));
         document.querySelectorAll('.unit-label').forEach(el => el.textContent = unit);
-        updateDashboard(); renderCycleBar();
+        updateDashboard(); renderCycleBar(); renderProgramSection();
         if (currentTab === 'history') renderHistory();
         if (currentTab === 'charts') renderChart();
         if (currentTab === 'stats') renderStats();
@@ -2616,8 +3255,21 @@
           <input type="number" id="bw-input" value="${profile.bodyweight ? displayWeight(profile.bodyweight) : ''}" placeholder="0" inputmode="decimal" step="any">
         </div>
         <button class="bw-log-btn" id="bw-log-btn">Log</button>
-      </div>
-    </div>`;
+      </div>`;
+    const wc = getWeightClass();
+    if (wc) {
+      html += `<div class="weight-class-card">
+        <div style="flex:1">
+          <div class="weight-class-label">IPF Weight Class</div>
+          <div class="weight-class-value">${wc.className}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="weight-class-detail">${wc.bwKg} kg</div>
+          ${!wc.isPlus && wc.distToLimit !== null ? `<div class="weight-class-detail">${wc.distToLimit} kg to limit</div>` : ''}
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
 
     // 2. Relative Strength
     html += `<div class="stats-section"><div class="stats-header">Relative Strength</div>`;
@@ -2974,7 +3626,9 @@
     b.classList.toggle('active', parseInt(b.dataset.secs) === timerDuration);
   });
   window.addEventListener('resize', () => { if (currentTab === 'charts') renderChart(); });
+  renderProgramSection();
   try { initPWA(); } catch {}
+  try { checkAutoRecap(); } catch {}
 
   // ===== FIREBASE AUTH & SYNC =====
   function updateSyncButton() {
@@ -3180,6 +3834,7 @@ service cloud.firestore {
       goals,
       prs,
       cycles,
+      programs: programConfig,
       unit: localStorage.getItem(UNIT_KEY) || 'lbs',
       timer: timerDuration,
       theme,
@@ -3258,6 +3913,12 @@ service cloud.firestore {
         activeCycleId = (cycles.find(c => c.active) || {}).id || null;
       }
 
+      // Programs: cloud wins (last-write-wins)
+      if (cloudData.programs) {
+        programConfig = { ...programConfig, ...cloudData.programs };
+        saveProgramConfig();
+      }
+
       // Unit, timer, theme: cloud wins
       if (cloudData.unit) {
         unit = cloudData.unit;
@@ -3281,6 +3942,7 @@ service cloud.firestore {
       // Refresh UI
       updateDashboard();
       renderCycleBar();
+      if (currentTab === 'log') renderProgramSection();
       if (currentTab === 'history') renderHistory();
       if (currentTab === 'charts') renderChart();
       if (currentTab === 'stats') renderStats();
@@ -3359,6 +4021,8 @@ service cloud.firestore {
   savePRs = function() { _origSavePRs(); scheduleCloudSync(); };
   const _origSaveCycles = saveCycles;
   saveCycles = function() { _origSaveCycles(); scheduleCloudSync(); };
+  const _origSaveProgramConfig = saveProgramConfig;
+  saveProgramConfig = function() { _origSaveProgramConfig(); scheduleCloudSync(); };
   const _origSaveAll = saveAll;
   saveAll = function() { _origSaveAll(); scheduleCloudSync(); };
 
