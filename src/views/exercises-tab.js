@@ -11,6 +11,7 @@ import { MUSCLE_GROUPS } from '../data/muscle-groups.js';
 // --- Ephemeral filter state ---
 let _liftFilter = 'all';
 let _equipFilter = 'all';
+let _muscleFilter = 'all';
 let _searchQuery = '';
 let _expandedId = null;
 let _showAddForm = false;
@@ -18,9 +19,16 @@ let _showAddForm = false;
 // --- Helpers ---
 
 function getMainLift(ex, _id) {
-  if (ex.supportsLifts) return ex.supportsLifts[0];
+  if (ex.supportsLifts?.length) return ex.supportsLifts[0];
   if (ex.mainLift) return ex.mainLift;
   return 'other';
+}
+
+/** Heaviest-weighted muscle for an exercise, used to bucket non-SBD movements. */
+function getPrimaryMuscle(ex) {
+  if (!ex.primaryMuscles) return null;
+  const sorted = Object.entries(ex.primaryMuscles).sort((a, b) => b[1] - a[1]);
+  return sorted[0]?.[0] || null;
 }
 
 function getPctDisplay(ex) {
@@ -35,6 +43,17 @@ function matchesLiftFilter(ex) {
   if (_liftFilter === 'all') return true;
   if (ex.supportsLifts) return ex.supportsLifts.includes(_liftFilter);
   return ex.mainLift === _liftFilter;
+}
+
+// A muscle counts as "trained" by an exercise once it carries at least a fifth
+// of the load — below that it's incidental stabilizer work, not a reason to
+// show up under that muscle's filter.
+const MUSCLE_FILTER_THRESHOLD = 0.2;
+
+function matchesMuscleFilter(ex) {
+  if (_muscleFilter === 'all') return true;
+  const w = ex.primaryMuscles?.[_muscleFilter];
+  return typeof w === 'number' && w >= MUSCLE_FILTER_THRESHOLD;
 }
 
 function matchesEquipFilter(ex) {
@@ -64,23 +83,41 @@ export function renderExercisesTab() {
 
   // Apply filters
   const filtered = exercises.filter(
-    (e) => matchesLiftFilter(e.ex) && matchesEquipFilter(e.ex) && matchesSearch(e.ex)
+    (e) =>
+      matchesLiftFilter(e.ex) &&
+      matchesEquipFilter(e.ex) &&
+      matchesMuscleFilter(e.ex) &&
+      matchesSearch(e.ex)
   );
 
-  // Group by lift
-  const groups = { squat: [], bench: [], deadlift: [], other: [] };
+  // Group by lift. Movements that don't carry over to a competition lift
+  // (pure bodybuilding / conditioning work) get bucketed by primary muscle
+  // instead of piling into one undifferentiated "Other" list.
+  const groups = { squat: [], bench: [], deadlift: [] };
+  const muscleGroups = {};
+  const otherGroup = [];
   const customGroup = [];
   for (const item of filtered) {
     if (item.id.startsWith('custom-')) {
       customGroup.push(item);
+    } else if (groups[item.mainLift]) {
+      groups[item.mainLift].push(item);
     } else {
-      (groups[item.mainLift] || groups.other).push(item);
+      const mg = getPrimaryMuscle(item.ex);
+      if (mg) {
+        (muscleGroups[mg] = muscleGroups[mg] || []).push(item);
+      } else {
+        otherGroup.push(item);
+      }
     }
   }
 
   // Sort each group alphabetically
-  for (const g of Object.values(groups)) g.sort((a, b) => a.ex.name.localeCompare(b.ex.name));
-  customGroup.sort((a, b) => a.ex.name.localeCompare(b.ex.name));
+  const byName = (a, b) => a.ex.name.localeCompare(b.ex.name);
+  for (const g of Object.values(groups)) g.sort(byName);
+  for (const g of Object.values(muscleGroups)) g.sort(byName);
+  otherGroup.sort(byName);
+  customGroup.sort(byName);
 
   let html = '';
 
@@ -104,6 +141,12 @@ export function renderExercisesTab() {
     html += `<button class="filter-pill${_equipFilter === val ? ' active' : ''}" data-equip-filter="${val}">${label}</button>`;
   }
   html += `</div>`;
+  html += `<div class="exercises-filter-row">`;
+  html += `<button class="filter-pill${_muscleFilter === 'all' ? ' active' : ''}" data-muscle-filter="all">All Muscles</button>`;
+  for (const mg of MUSCLE_GROUPS) {
+    html += `<button class="filter-pill${_muscleFilter === mg ? ' active' : ''}" data-muscle-filter="${mg}">${mg}</button>`;
+  }
+  html += `</div>`;
   html += `<input type="text" class="exercise-search" placeholder="Search exercises..." value="${_searchQuery}">`;
   html += `</div>`;
 
@@ -117,9 +160,18 @@ export function renderExercisesTab() {
     html += renderExerciseRows(items);
   }
 
-  if (groups.other.length > 0) {
-    html += `<div class="exercise-section-label">Other (${groups.other.length})</div>`;
-    html += renderExerciseRows(groups.other);
+  // Non-SBD movements, grouped by the muscle they primarily train
+  for (const mg of MUSCLE_GROUPS) {
+    const items = muscleGroups[mg];
+    if (!items || items.length === 0) continue;
+    const enabledCount = items.filter((i) => !i.disabled).length;
+    html += `<div class="exercise-section-label">${mg} (${enabledCount}/${items.length})</div>`;
+    html += renderExerciseRows(items);
+  }
+
+  if (otherGroup.length > 0) {
+    html += `<div class="exercise-section-label">Other (${otherGroup.length})</div>`;
+    html += renderExerciseRows(otherGroup);
   }
 
   if (customGroup.length > 0) {
@@ -251,6 +303,14 @@ export function attachExercisesListeners(container) {
   container.querySelectorAll('[data-equip-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       _equipFilter = btn.dataset.equipFilter;
+      rerender(container);
+    });
+  });
+
+  // Filter pills — muscle group
+  container.querySelectorAll('[data-muscle-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      _muscleFilter = btn.dataset.muscleFilter;
       rerender(container);
     });
   });

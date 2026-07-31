@@ -21,6 +21,7 @@ import {
 } from './constants/index.js';
 import { WEAK_POINT_OPTIONS } from './data/accessories.js';
 import { ACCESSORY_DB, EXERCISE_INFO } from './data/accessories.js';
+import { resolveExercise } from './data/exercise-compat.js';
 
 // ===== 2. State =====
 import store from './state/store.js';
@@ -290,14 +291,30 @@ function initExercisePreview() {
   function showExercisePreview(exId) {
     const db = ACCESSORY_DB[exId];
     const info = EXERCISE_INFO[exId];
-    if (!db && !info) return;
-    $('ep-name').textContent = db ? db.name : exId;
-    $('ep-desc').textContent = info ? info.desc : '';
+    // Catalog entry (canonical or legacy id) — covers every exercise in the
+    // library, including the ones that never existed in ACCESSORY_DB.
+    const catalogEx = resolveExercise(exId);
+    if (!db && !info && !catalogEx) return;
+    $('ep-name').textContent = db ? db.name : catalogEx ? catalogEx.name : exId;
+    $('ep-desc').textContent = info ? info.desc : catalogEx?.desc || '';
     const meta = [];
     if (db) {
       meta.push(db.equipment);
       meta.push(db.sets + ' x ' + db.repRange.join('-') + (db.timeBased ? 's' : ' reps'));
       if (db.weakPoints.length) meta.push('Targets: ' + db.weakPoints.join(', '));
+    } else if (catalogEx) {
+      meta.push(catalogEx.equipment);
+      meta.push(
+        catalogEx.sets +
+          ' x ' +
+          catalogEx.repRange.join('-') +
+          (catalogEx.timeBased ? 's' : ' reps')
+      );
+      const muscles = Object.entries(catalogEx.primaryMuscles || {})
+        .filter(([, w]) => w >= 0.2)
+        .sort((a, b) => b[1] - a[1])
+        .map(([mg]) => mg);
+      if (muscles.length) meta.push(muscles.join(', '));
     }
     $('ep-meta').textContent = meta.join('  \u2022  ');
     const vid = $('ep-video');
@@ -322,7 +339,7 @@ function initExercisePreview() {
       const target = e.target.closest('[data-exid]');
       if (!target || !target.dataset.exid) return;
       const exId = target.dataset.exid;
-      if (!EXERCISE_INFO[exId]) return;
+      if (!EXERCISE_INFO[exId] && !resolveExercise(exId)) return;
       timer = setTimeout(function () {
         showExercisePreview(exId);
         timer = null;

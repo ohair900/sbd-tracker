@@ -37,6 +37,8 @@ import {
   resolveExercise,
   getLegacyIds,
 } from '../data/exercise-compat.js';
+import { BODYBUILDING_SPLITS } from '../constants/bodybuilding-config.js';
+import { ROTATION_EXCLUDED } from '../constants/rotation.js';
 
 const MUSCLE_SET = new Set(MUSCLE_GROUPS);
 const LIFTS = ['squat', 'bench', 'deadlift'];
@@ -243,6 +245,18 @@ describe('exercise-catalog: regression fixes', () => {
 });
 
 describe('exercise-catalog: supportsLifts + weakPoints shape', () => {
+  // These three fields are read WITHOUT optional chaining in hot paths
+  // (scoreAccessories, gap-analysis suggestions, workout-guardrails,
+  // getAccessoryWeight). A catalog entry missing any of them throws at
+  // runtime rather than degrading, so presence is non-negotiable.
+  it('every exercise declares supportsLifts, weakPoints, and pctOfTM', () => {
+    for (const [id, ex] of Object.entries(EXERCISE_CATALOG)) {
+      expect(Array.isArray(ex.supportsLifts), `${id} missing supportsLifts array`).toBe(true);
+      expect(ex.weakPoints, `${id} missing weakPoints object`).toBeTypeOf('object');
+      expect(ex.pctOfTM, `${id} missing pctOfTM object`).toBeTypeOf('object');
+    }
+  });
+
   it('supportsLifts only contains valid lifts', () => {
     for (const [_id, ex] of Object.entries(EXERCISE_CATALOG)) {
       if (!ex.supportsLifts) continue;
@@ -253,12 +267,73 @@ describe('exercise-catalog: supportsLifts + weakPoints shape', () => {
     }
   });
 
-  it('weakPoints per lift are arrays', () => {
+  it('weakPoints per lift are arrays keyed by a valid lift', () => {
     for (const [id, ex] of Object.entries(EXERCISE_CATALOG)) {
       if (!ex.weakPoints) continue;
       for (const [lift, points] of Object.entries(ex.weakPoints)) {
+        expect(LIFTS, `${id}.weakPoints has unknown lift ${lift}`).toContain(lift);
         expect(Array.isArray(points), `${id}.weakPoints.${lift} not array`).toBe(true);
       }
+    }
+  });
+
+  it('pctOfTM is keyed by valid lifts with sane percentages', () => {
+    for (const [id, ex] of Object.entries(EXERCISE_CATALOG)) {
+      for (const [lift, pct] of Object.entries(ex.pctOfTM || {})) {
+        expect(LIFTS, `${id}.pctOfTM has unknown lift ${lift}`).toContain(lift);
+        expect(pct, `${id}.pctOfTM.${lift}`).toBeGreaterThan(0);
+        expect(pct, `${id}.pctOfTM.${lift}`).toBeLessThanOrEqual(1.2);
+      }
+    }
+  });
+
+  it('weakPoints and pctOfTM only reference lifts the exercise supports', () => {
+    for (const [id, ex] of Object.entries(EXERCISE_CATALOG)) {
+      const supported = new Set(ex.supportsLifts || []);
+      for (const lift of Object.keys(ex.weakPoints || {})) {
+        expect(supported.has(lift), `${id}.weakPoints.${lift} but lift not in supportsLifts`).toBe(
+          true
+        );
+      }
+      for (const lift of Object.keys(ex.pctOfTM || {})) {
+        expect(supported.has(lift), `${id}.pctOfTM.${lift} but lift not in supportsLifts`).toBe(
+          true
+        );
+      }
+    }
+  });
+
+  it('time-based exercises use the time progression model', () => {
+    for (const [id, ex] of Object.entries(EXERCISE_CATALOG)) {
+      if (!ex.timeBased) continue;
+      expect(ex.progressionType, `${id} is timeBased but not a time progression`).toBe('time');
+    }
+  });
+});
+
+// ============================================================================
+// Cross-file exercise ID references
+// ============================================================================
+
+describe('exercise ID references resolve to real catalog entries', () => {
+  it('every BODYBUILDING_SPLITS candidate is a real exercise', () => {
+    for (const split of Object.values(BODYBUILDING_SPLITS)) {
+      for (const day of split.days) {
+        for (const slot of day.slots) {
+          for (const id of slot.candidates || []) {
+            expect(
+              EXERCISE_CATALOG[id],
+              `${split.key}/${day.key} references unknown exercise "${id}"`
+            ).toBeDefined();
+          }
+        }
+      }
+    }
+  });
+
+  it('every ROTATION_EXCLUDED id is a real exercise', () => {
+    for (const id of ROTATION_EXCLUDED) {
+      expect(EXERCISE_CATALOG[id], `ROTATION_EXCLUDED has unknown exercise "${id}"`).toBeDefined();
     }
   });
 });

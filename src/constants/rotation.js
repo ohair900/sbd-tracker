@@ -25,4 +25,42 @@ export const ROTATION_EXCLUDED = new Set([
   'wall-sit', // time-based
   'rear-delt-flies', // isolation, light only
   'dead-hang', // time-based
+
+  // Time-based holds and carries — duration is the progression, not load
+  'side-plank',
+  'hollow-hold',
+  'suitcase-carry',
+  'overhead-carry',
+  'sled-push',
+  'sled-drag',
+  'plate-pinch',
+
+  // Small-joint / shoulder-health isolation — heavy tiers are unsafe or useless
+  'cable-lateral-raise',
+  'front-raise',
+  'reverse-pec-deck',
+  'band-pull-apart',
+  'upright-row',
+  'tricep-kickback',
+  'wrist-curl',
+  'reverse-wrist-curl',
+  'wrist-roller',
+  'sissy-squat',
+
+  // Direct core and glute isolation — rep-based by nature
+  'crunch',
+  'sit-up',
+  'v-up',
+  'russian-twist',
+  'machine-crunch',
+  'cable-crunch',
+  'dead-bug',
+  'bird-dog',
+  'hanging-leg-raise',
+  'hanging-knee-raise',
+  'toes-to-bar',
+  'cable-kickback',
+  'hip-abduction',
+  'hip-adduction',
+  'bodyweight-squat',
 ]);

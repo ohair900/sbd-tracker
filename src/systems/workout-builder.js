@@ -801,8 +801,12 @@ export function selectTravelWorkout(grouping, equipmentOverride) {
       score += 20;
     }
 
-    // Compound bonus for full-body sessions
-    if (grouping === 'full' && ex.progressionType === 'compound') score += 5;
+    // Movement-class bias. The freshness bonus above stacks per targeted
+    // muscle, which lets a wide-but-shallow isolation machine outscore a
+    // genuine compound. Session slots are scarce, so favour compounds and
+    // discount isolation everywhere — not just on full-body days.
+    if (ex.progressionType === 'compound') score += grouping === 'full' ? 8 : 5;
+    else if (ex.progressionType === 'isolation') score -= 5;
 
     candidates.push({ id, ex, score, primaryMuscle });
   }
