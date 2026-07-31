@@ -243,23 +243,39 @@ function renderStatsRecordsBoard() {
   REP_RANGES.forEach((r) => {
     html += `<div class="rg-header">${r}RM</div>`;
   });
+  const cell = (weight, date, extraClass = '') => {
+    const daysAgo = Math.round((Date.now() - new Date(date + 'T12:00:00').getTime()) / MS_PER_DAY);
+    const isRecent = daysAgo < 30;
+    const dateLabel =
+      daysAgo < 7 ? `${daysAgo}d ago` : daysAgo < 60 ? `${Math.round(daysAgo / 7)}w ago` : '';
+    return `<div class="rg-cell${extraClass}${isRecent ? ' pr-cell' : ''}" title="${date}">${formatWeight(weight)}${dateLabel ? `<div class="rg-date">${dateLabel}</div>` : ''}</div>`;
+  };
+  const emptyCell = (extraClass = '') =>
+    `<div class="rg-cell${extraClass}" style="color:var(--text-dim)">\u2014</div>`;
+
   LIFTS.forEach((lift) => {
     html += `<div class="rg-lift" style="color:${COLORS[lift]}">${LIFT_SHORT[lift]}</div>`;
     REP_RANGES.forEach((r) => {
       const best = repPRs[lift][r];
-      if (best) {
-        const daysAgo = Math.round(
-          (Date.now() - new Date(best.date + 'T12:00:00').getTime()) / MS_PER_DAY
-        );
-        const isRecent = daysAgo < 30;
-        const dateLabel =
-          daysAgo < 7 ? `${daysAgo}d ago` : daysAgo < 60 ? `${Math.round(daysAgo / 7)}w ago` : '';
-        html += `<div class="rg-cell${isRecent ? ' pr-cell' : ''}" title="${best.date}">${formatWeight(best.weight)}${dateLabel ? `<div class="rg-date">${dateLabel}</div>` : ''}</div>`;
-      } else {
-        html += `<div class="rg-cell" style="color:var(--text-dim)">\u2014</div>`;
-      }
+      html += best ? cell(best.weight, best.date) : emptyCell();
     });
   });
+
+  // Total row \u2014 sum of the three lifts at each rep count. Only shown when all
+  // three lifts have a record at that rep count; the total's "date" is the
+  // newest contributing PR, since that's when the total became true.
+  html += `<div class="rg-lift rg-total" style="color:${COLORS.total}">TOT</div>`;
+  REP_RANGES.forEach((r) => {
+    const bests = LIFTS.map((lift) => repPRs[lift][r]);
+    if (bests.some((b) => !b)) {
+      html += emptyCell(' rg-total-cell');
+      return;
+    }
+    const sum = bests.reduce((acc, b) => acc + b.weight, 0);
+    const newest = bests.reduce((a, b) => (a.date > b.date ? a : b)).date;
+    html += cell(sum, newest, ' rg-total-cell');
+  });
+
   html += `</div>`;
   return html + SECTION_CLOSE;
 }
