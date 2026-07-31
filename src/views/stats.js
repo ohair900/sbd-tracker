@@ -264,7 +264,7 @@ function renderStatsRecordsBoard() {
   // Total row \u2014 sum of the three lifts at each rep count. Only shown when all
   // three lifts have a record at that rep count; the total's "date" is the
   // newest contributing PR, since that's when the total became true.
-  html += `<div class="rg-lift rg-total" style="color:${COLORS.total}">TOT</div>`;
+  html += `<div class="rg-lift rg-total" style="color:${COLORS.total}">TOTAL</div>`;
   REP_RANGES.forEach((r) => {
     const bests = LIFTS.map((lift) => repPRs[lift][r]);
     if (bests.some((b) => !b)) {

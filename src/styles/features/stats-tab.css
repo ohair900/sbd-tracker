@@ -185,6 +185,11 @@
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+/* Keep the longer "TOTAL" label from widening the label column on phones */
+.records-grid .rg-total {
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+}
 
 /* Volume summary rows */
 .vol-row {
